@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -7,341 +7,269 @@ import { Progress } from '@/components/ui/progress';
 import { 
   CreditCard, 
   Download, 
-  AlertCircle,
+  DollarSign, 
   TrendingUp,
-  DollarSign,
   Calendar,
-  Zap,
-  Plus
+  FileText,
+  AlertTriangle,
+  CheckCircle
 } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import { useBillingInfo } from '@/hooks/useDashboardData';
 
 const BillingPage = () => {
-  const [selectedPeriod, setSelectedPeriod] = useState('month');
+  const { data: billingData, isLoading } = useBillingInfo();
 
-  // Mock billing data
+  // Mock current usage data - in real app this would come from API
   const currentUsage = {
-    period: 'January 2024',
-    totalCost: 2847.50,
-    limit: 5000.00,
-    usage: 57,
-    daysLeft: 5,
-    projectedCost: 3200.00
+    requests: 8542,
+    requestLimit: 10000,
+    cost: 127.45,
+    costLimit: 200,
+    tokens: 1250000,
+    tokenLimit: 2000000
   };
 
-  const usageBreakdown = [
-    { model: 'GPT-4', requests: 847234, cost: 1247.50, percentage: 44 },
-    { model: 'GPT-3.5 Turbo', requests: 652180, cost: 892.30, percentage: 31 },
-    { model: 'Claude-3', requests: 234567, cost: 456.80, percentage: 16 },
-    { model: 'Text Embedding', requests: 123456, cost: 234.90, percentage: 8 },
-    { model: 'Others', requests: 45678, cost: 16.00, percentage: 1 }
-  ];
-
-  const monthlySpend = [
-    { month: 'Jul', cost: 1850.30 },
-    { month: 'Aug', cost: 2240.80 },
-    { month: 'Sep', cost: 1995.60 },
-    { month: 'Oct', cost: 2567.90 },
-    { month: 'Nov', cost: 2890.45 },
-    { month: 'Dec', cost: 3120.75 },
-    { month: 'Jan', cost: 2847.50 },
-  ];
-
-  const invoices = [
-    {
-      id: 'INV-2024-001',
-      date: '2024-01-01',
-      amount: 3120.75,
-      status: 'paid',
-      period: 'December 2023'
-    },
-    {
-      id: 'INV-2023-012',
-      date: '2023-12-01',
-      amount: 2890.45,
-      status: 'paid',
-      period: 'November 2023'
-    },
-    {
-      id: 'INV-2023-011',
-      date: '2023-11-01',
-      amount: 2567.90,
-      status: 'paid',
-      period: 'October 2023'
-    },
-    {
-      id: 'INV-2023-010',
-      date: '2023-10-01',
-      amount: 1995.60,
-      status: 'paid',
-      period: 'September 2023'
-    }
-  ];
-
-  const paymentMethods = [
-    {
-      id: 1,
-      type: 'card',
-      last4: '4242',
-      brand: 'Visa',
-      expiry: '12/25',
-      default: true
-    },
-    {
-      id: 2,
-      type: 'card',
-      last4: '8888',
-      brand: 'Mastercard',
-      expiry: '08/26',
-      default: false
-    }
-  ];
-
-  const getStatusBadge = (status: string) => {
+  const getStatusColor = (status: string) => {
     switch (status) {
       case 'paid':
-        return <Badge className="bg-green-600/20 text-green-400">Paid</Badge>;
+        return 'bg-green-500/10 text-green-400 border-green-500/20';
       case 'pending':
-        return <Badge className="bg-yellow-600/20 text-yellow-400">Pending</Badge>;
+        return 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20';
       case 'overdue':
-        return <Badge className="bg-red-600/20 text-red-400">Overdue</Badge>;
+        return 'bg-red-500/10 text-red-400 border-red-500/20';
       default:
-        return <Badge variant="secondary">Unknown</Badge>;
+        return 'bg-gray-500/10 text-gray-400 border-gray-500/20';
     }
   };
 
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'paid':
+        return <CheckCircle className="w-4 h-4" />;
+      case 'overdue':
+        return <AlertTriangle className="w-4 h-4" />;
+      default:
+        return <Calendar className="w-4 h-4" />;
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="p-6 space-y-6">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-1/4 mb-6"></div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="h-48 bg-gray-200 rounded"></div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="glass-card rounded-lg p-6">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
-          <div>
-            <h1 className="text-2xl font-bold text-white mb-2">Billing & Usage</h1>
-            <p className="text-gray-300">Monitor your usage and manage billing information</p>
-          </div>
-          
-          <div className="flex space-x-3">
-            <Button variant="outline" className="border-gray-600 text-gray-300 hover:bg-gray-700">
-              <Download className="w-4 h-4 mr-2" />
-              Export Usage
-            </Button>
-            <Button className="bg-blue-600 hover:bg-blue-700">
-              <Plus className="w-4 h-4 mr-2" />
-              Add Payment Method
-            </Button>
-          </div>
+    <div className="p-6 space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-white">Billing & Usage</h1>
+          <p className="text-gray-400 mt-1">Manage your subscription and monitor usage</p>
+        </div>
+        
+        <div className="flex space-x-2">
+          <Button variant="outline" size="sm" className="border-gray-600">
+            <Download className="w-4 h-4 mr-2" />
+            Export
+          </Button>
         </div>
       </div>
 
       {/* Current Usage Overview */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Usage Meter */}
-        <Card className="glass-card border-0 lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="text-white">Current Usage - {currentUsage.period}</CardTitle>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card className="glass-card border-gray-700">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-gray-300">Monthly Requests</CardTitle>
+            <TrendingUp className="h-4 w-4 text-blue-400" />
           </CardHeader>
           <CardContent>
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-3xl font-bold text-white">${currentUsage.totalCost.toFixed(2)}</p>
-                  <p className="text-gray-300">of ${currentUsage.limit.toFixed(2)} limit</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm text-gray-400">Projected</p>
-                  <p className="text-xl font-semibold text-yellow-400">${currentUsage.projectedCost.toFixed(2)}</p>
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-300">Usage Progress</span>
-                  <span className="text-gray-300">{currentUsage.usage}%</span>
-                </div>
-                <Progress value={currentUsage.usage} className="h-3" />
-              </div>
-
-              <div className="flex items-center justify-between text-sm">
-                <div className="flex items-center space-x-2">
-                  <Calendar className="w-4 h-4 text-gray-400" />
-                  <span className="text-gray-300">{currentUsage.daysLeft} days left in billing period</span>
-                </div>
-                {currentUsage.projectedCost > currentUsage.limit && (
-                  <div className="flex items-center space-x-2 text-yellow-400">
-                    <AlertCircle className="w-4 h-4" />
-                    <span>Projected to exceed limit</span>
-                  </div>
-                )}
-              </div>
-            </div>
+            <div className="text-2xl font-bold text-white">{currentUsage.requests.toLocaleString()}</div>
+            <p className="text-xs text-gray-400 mb-2">
+              of {currentUsage.requestLimit.toLocaleString()} limit
+            </p>
+            <Progress value={(currentUsage.requests / currentUsage.requestLimit) * 100} className="h-2" />
           </CardContent>
         </Card>
 
-        {/* Quick Stats */}
-        <div className="space-y-4">
-          <Card className="glass-card border-0">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="p-2 rounded-lg bg-blue-600/20">
-                  <TrendingUp className="w-6 h-6 text-blue-400" />
-                </div>
-                <div className="text-sm text-green-400">+15.3%</div>
-              </div>
-              <div className="space-y-1">
-                <p className="text-sm text-gray-400">This Month</p>
-                <p className="text-2xl font-bold text-white">${currentUsage.totalCost.toFixed(2)}</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="glass-card border-0">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="p-2 rounded-lg bg-green-600/20">
-                  <Zap className="w-6 h-6 text-green-400" />
-                </div>
-                <div className="text-sm text-gray-400">Requests</div>
-              </div>
-              <div className="space-y-1">
-                <p className="text-sm text-gray-400">Total API Calls</p>
-                <p className="text-2xl font-bold text-white">1.9M</p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-
-      {/* Usage Breakdown */}
-      <Card className="glass-card border-0">
-        <CardHeader>
-          <CardTitle className="text-white">Usage Breakdown by Model</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {usageBreakdown.map((item, index) => (
-              <div key={index} className="flex items-center justify-between p-4 glass rounded-lg">
-                <div className="flex items-center space-x-4">
-                  <div className="w-3 h-3 bg-blue-400 rounded-full"></div>
-                  <div>
-                    <p className="text-white font-medium">{item.model}</p>
-                    <p className="text-sm text-gray-400">{item.requests.toLocaleString()} requests</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-white font-semibold">${item.cost.toFixed(2)}</p>
-                  <p className="text-sm text-gray-400">{item.percentage}%</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Monthly Spend Chart */}
-      <Card className="glass-card border-0">
-        <CardHeader>
-          <CardTitle className="text-white">Monthly Spending Trend</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={monthlySpend}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                <XAxis dataKey="month" stroke="#9CA3AF" />
-                <YAxis stroke="#9CA3AF" />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: '#1F2937', 
-                    border: '1px solid #374151',
-                    borderRadius: '8px',
-                    color: '#fff'
-                  }}
-                  formatter={(value: any) => [`$${Number(value).toFixed(2)}`, 'Cost']}
-                />
-                <Bar dataKey="cost" fill="#3B82F6" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Payment Methods and Invoices */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Payment Methods */}
-        <Card className="glass-card border-0">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-white">Payment Methods</CardTitle>
-              <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
-                <Plus className="w-4 h-4 mr-2" />
-                Add Card
-              </Button>
-            </div>
+        <Card className="glass-card border-gray-700">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-gray-300">Monthly Cost</CardTitle>
+            <DollarSign className="h-4 w-4 text-green-400" />
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {paymentMethods.map((method) => (
-                <div key={method.id} className="flex items-center justify-between p-4 glass rounded-lg">
-                  <div className="flex items-center space-x-4">
-                    <div className="p-2 rounded-lg bg-gray-700">
-                      <CreditCard className="w-5 h-5 text-gray-300" />
+            <div className="text-2xl font-bold text-white">${currentUsage.cost}</div>
+            <p className="text-xs text-gray-400 mb-2">
+              of ${currentUsage.costLimit} budget
+            </p>
+            <Progress value={(currentUsage.cost / currentUsage.costLimit) * 100} className="h-2" />
+          </CardContent>
+        </Card>
+
+        <Card className="glass-card border-gray-700">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-gray-300">Monthly Tokens</CardTitle>
+            <FileText className="h-4 w-4 text-purple-400" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-white">{(currentUsage.tokens / 1000000).toFixed(1)}M</div>
+            <p className="text-xs text-gray-400 mb-2">
+              of {(currentUsage.tokenLimit / 1000000).toFixed(1)}M limit
+            </p>
+            <Progress value={(currentUsage.tokens / currentUsage.tokenLimit) * 100} className="h-2" />
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Current Billing Cycle */}
+      {billingData?.currentCycle && (
+        <Card className="glass-card border-gray-700">
+          <CardHeader>
+            <CardTitle className="text-white">Current Billing Cycle</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div>
+                <p className="text-gray-400 text-sm">Billing Period</p>
+                <p className="text-white font-medium">
+                  {new Date(billingData.currentCycle.cycle_start).toLocaleDateString()} - {new Date(billingData.currentCycle.cycle_end).toLocaleDateString()}
+                </p>
+              </div>
+              <div>
+                <p className="text-gray-400 text-sm">Usage Cost</p>
+                <p className="text-white font-medium">${billingData.currentCycle.usage_cost}</p>
+              </div>
+              <div>
+                <p className="text-gray-400 text-sm">Subscription</p>
+                <p className="text-white font-medium">${billingData.currentCycle.subscription_cost}</p>
+              </div>
+              <div>
+                <p className="text-gray-400 text-sm">Total Amount</p>
+                <p className="text-white font-medium text-lg">${billingData.currentCycle.total_amount}</p>
+              </div>
+            </div>
+
+            {billingData.currentCycle.billing_line_items && billingData.currentCycle.billing_line_items.length > 0 && (
+              <div className="mt-6">
+                <h4 className="text-white font-medium mb-4">Line Items</h4>
+                <div className="space-y-2">
+                  {billingData.currentCycle.billing_line_items.map((item: any) => (
+                    <div key={item.id} className="flex justify-between items-center p-3 bg-gray-800/50 rounded">
+                      <div>
+                        <p className="text-white">{item.description}</p>
+                        <p className="text-gray-400 text-sm">{item.quantity} {item.unit_type}</p>
+                      </div>
+                      <p className="text-white font-medium">${item.total_amount}</p>
                     </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Payment Methods */}
+      <Card className="glass-card border-gray-700">
+        <CardHeader>
+          <CardTitle className="text-white flex items-center">
+            <CreditCard className="w-5 h-5 mr-2" />
+            Payment Methods
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {billingData?.paymentMethods?.length ? (
+            <div className="space-y-4">
+              {billingData.paymentMethods.map((method: any) => (
+                <div key={method.id} className="flex items-center justify-between p-4 bg-gray-800/50 rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <CreditCard className="w-8 h-8 text-gray-400" />
                     <div>
                       <p className="text-white font-medium">
-                        {method.brand} •••• {method.last4}
+                        {method.brand?.toUpperCase()} •••• {method.last_four}
                       </p>
-                      <p className="text-sm text-gray-400">Expires {method.expiry}</p>
+                      <p className="text-gray-400 text-sm">
+                        Expires {method.expiry_month}/{method.expiry_year}
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
-                    {method.default && (
-                      <Badge variant="secondary" className="bg-blue-600/20 text-blue-400">
+                    {method.is_default && (
+                      <Badge variant="outline" className="bg-blue-500/10 text-blue-400 border-blue-500/20">
                         Default
                       </Badge>
                     )}
-                    <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">
-                      Edit
+                    <Button variant="ghost" size="sm">Edit</Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <CreditCard className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+              <p className="text-gray-400 mb-4">No payment methods added</p>
+              <Button>Add Payment Method</Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Invoice History */}
+      <Card className="glass-card border-gray-700">
+        <CardHeader>
+          <CardTitle className="text-white">Invoice History</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {billingData?.invoiceHistory?.length ? (
+            <div className="space-y-4">
+              {billingData.invoiceHistory.map((invoice: any) => (
+                <div key={invoice.id} className="flex items-center justify-between p-4 bg-gray-800/50 rounded-lg">
+                  <div className="flex items-center space-x-4">
+                    {getStatusIcon(invoice.status)}
+                    <div>
+                      <p className="text-white font-medium">
+                        Invoice #{invoice.invoice_number || `INV-${invoice.id.slice(0, 8)}`}
+                      </p>
+                      <p className="text-gray-400 text-sm">
+                        {new Date(invoice.cycle_start).toLocaleDateString()} - {new Date(invoice.cycle_end).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center space-x-4">
+                    <Badge variant="outline" className={getStatusColor(invoice.status)}>
+                      {invoice.status}
+                    </Badge>
+                    <div className="text-right">
+                      <p className="text-white font-medium">${invoice.total_amount}</p>
+                      <p className="text-gray-400 text-sm">
+                        {invoice.paid_at ? `Paid ${new Date(invoice.paid_at).toLocaleDateString()}` : 
+                         invoice.due_date ? `Due ${new Date(invoice.due_date).toLocaleDateString()}` : ''}
+                      </p>
+                    </div>
+                    <Button variant="ghost" size="sm">
+                      <Download className="w-4 h-4" />
                     </Button>
                   </div>
                 </div>
               ))}
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Recent Invoices */}
-        <Card className="glass-card border-0">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-white">Recent Invoices</CardTitle>
-              <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">
-                View All
-              </Button>
+          ) : (
+            <div className="text-center py-8">
+              <FileText className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+              <p className="text-gray-400">No invoices found</p>
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {invoices.map((invoice) => (
-                <div key={invoice.id} className="flex items-center justify-between p-4 glass rounded-lg">
-                  <div>
-                    <p className="text-white font-medium">{invoice.id}</p>
-                    <p className="text-sm text-gray-400">{invoice.period}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-white font-semibold">${invoice.amount.toFixed(2)}</p>
-                    <div className="flex items-center space-x-2">
-                      {getStatusBadge(invoice.status)}
-                      <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white p-1">
-                        <Download className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 };

@@ -1,234 +1,228 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { TrendingUp, TrendingDown, Activity, DollarSign, Zap, Clock } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-
-const AnimatedCounter = ({ end, duration = 2000 }: { end: number; duration?: number }) => {
-  const [count, setCount] = useState(0);
-
-  useEffect(() => {
-    let startTime: number;
-    const animate = (currentTime: number) => {
-      if (!startTime) startTime = currentTime;
-      const progress = Math.min((currentTime - startTime) / duration, 1);
-      setCount(Math.floor(progress * end));
-      if (progress < 1) {
-        requestAnimationFrame(animate);
-      }
-    };
-    requestAnimationFrame(animate);
-  }, [end, duration]);
-
-  return <span>{count.toLocaleString()}</span>;
-};
+import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
+import { 
+  TrendingUp, 
+  Zap, 
+  DollarSign, 
+  Activity,
+  Users,
+  Clock,
+  AlertTriangle,
+  CheckCircle
+} from 'lucide-react';
+import { 
+  ChartContainer, 
+  ChartTooltip, 
+  ChartTooltipContent 
+} from '@/components/ui/chart';
+import { LineChart, Line, AreaChart, Area, XAxis, YAxis, ResponsiveContainer } from 'recharts';
+import { useDashboardStats, useUsageAnalytics } from '@/hooks/useDashboardData';
+import { useRealTimeUpdates } from '@/hooks/useRealTimeUpdates';
 
 const HomePage = () => {
-  const [selectedPeriod, setSelectedPeriod] = useState('7d');
+  // Enable real-time updates
+  useRealTimeUpdates();
+  
+  // Fetch real data
+  const { data: stats, isLoading: statsLoading } = useDashboardStats();
+  const { data: analyticsData, isLoading: analyticsLoading } = useUsageAnalytics('7d');
 
-  // Mock data for the chart
-  const chartData = [
-    { name: 'Mon', requests: 12400, responseTime: 234 },
-    { name: 'Tue', requests: 13200, responseTime: 221 },
-    { name: 'Wed', requests: 15800, responseTime: 245 },
-    { name: 'Thu', requests: 14200, responseTime: 198 },
-    { name: 'Fri', requests: 16800, responseTime: 267 },
-    { name: 'Sat', requests: 11200, responseTime: 189 },
-    { name: 'Sun', requests: 9800, responseTime: 203 },
-  ];
+  // Process analytics data for charts
+  const processedAnalytics = React.useMemo(() => {
+    if (!analyticsData) return [];
+    
+    // Group by date and sum across models
+    const grouped = analyticsData.reduce((acc, item) => {
+      const date = item.usage_date;
+      if (!acc[date]) {
+        acc[date] = {
+          date,
+          requests: 0,
+          cost: 0,
+          tokens: 0,
+          response_time: 0,
+          count: 0
+        };
+      }
+      acc[date].requests += item.total_requests || 0;
+      acc[date].cost += item.total_cost || 0;
+      acc[date].tokens += item.total_tokens || 0;
+      acc[date].response_time += item.avg_response_time_ms || 0;
+      acc[date].count += 1;
+      return acc;
+    }, {} as any);
 
-  const recentActivity = [
-    { time: '2 minutes ago', action: 'High usage detected', type: 'warning' },
-    { time: '15 minutes ago', action: 'API key regenerated', type: 'info' },
-    { time: '1 hour ago', action: 'New team member added', type: 'success' },
-    { time: '3 hours ago', action: 'Rate limit adjusted', type: 'info' },
-    { time: '5 hours ago', action: 'Payment processed successfully', type: 'success' },
-  ];
+    return Object.values(grouped).map((item: any) => ({
+      ...item,
+      response_time: item.count > 0 ? Math.round(item.response_time / item.count) : 0,
+      date: new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    }));
+  }, [analyticsData]);
 
-  const metricCards = [
-    {
-      title: 'API Requests',
-      value: 847234,
-      change: '+12.5%',
-      trend: 'up',
-      icon: <Activity className="w-6 h-6 text-blue-400" />,
-      color: 'blue'
-    },
-    {
-      title: 'Avg Response Time',
-      value: 234,
-      suffix: 'ms',
-      change: '-5.2%',
-      trend: 'down',
-      icon: <Clock className="w-6 h-6 text-green-400" />,
-      color: 'green'
-    },
-    {
-      title: 'Peak Load',
-      value: 1247,
-      suffix: 'req/s',
-      change: '+8.1%',
-      trend: 'up',
-      icon: <Zap className="w-6 h-6 text-purple-400" />,
-      color: 'purple'
-    },
-    {
-      title: 'Outstanding Balance',
-      value: 2847,
-      prefix: '$',
-      change: 'Due in 5 days',
-      trend: 'neutral',
-      icon: <DollarSign className="w-6 h-6 text-yellow-400" />,
-      color: 'yellow'
-    }
-  ];
-
-  return (
-    <div className="space-y-6">
-      {/* Welcome Header */}
-      <div className="glass-card rounded-lg p-6">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-white mb-2">
-              Welcome back, John! 👋
-            </h1>
-            <p className="text-gray-300">
-              Here's what's happening with your AI models today.
-            </p>
-          </div>
-          <div className="mt-4 md:mt-0 flex space-x-2">
-            {['24h', '7d', '30d'].map((period) => (
-              <Button
-                key={period}
-                variant={selectedPeriod === period ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setSelectedPeriod(period)}
-                className={selectedPeriod === period ? 'bg-blue-600 hover:bg-blue-700' : 'border-gray-600 text-gray-300 hover:bg-gray-700'}
-              >
-                {period}
-              </Button>
+  if (statsLoading) {
+    return (
+      <div className="p-6 space-y-6">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-1/4 mb-6"></div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="h-32 bg-gray-200 rounded"></div>
             ))}
           </div>
         </div>
       </div>
+    );
+  }
 
-      {/* Metric Cards */}
+  return (
+    <div className="p-6 space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-white">Dashboard</h1>
+          <p className="text-gray-400 mt-1">Real-time AI usage analytics and insights</p>
+        </div>
+        <div className="flex space-x-2">
+          <Badge variant="outline" className="bg-green-500/10 text-green-400 border-green-500/20">
+            <div className="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
+            Live Data
+          </Badge>
+        </div>
+      </div>
+
+      {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {metricCards.map((metric, index) => (
-          <Card key={index} className="glass-card border-0 hover:scale-105 transition-all duration-300">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="p-2 rounded-lg bg-gray-800/50">
-                  {metric.icon}
-                </div>
-                <div className={`flex items-center text-sm ${
-                  metric.trend === 'up' ? 'text-green-400' : 
-                  metric.trend === 'down' ? 'text-green-400' : 
-                  'text-gray-400'
-                }`}>
-                  {metric.trend === 'up' && <TrendingUp className="w-4 h-4 mr-1" />}
-                  {metric.trend === 'down' && <TrendingDown className="w-4 h-4 mr-1" />}
-                  {metric.change}
-                </div>
-              </div>
-              <div className="space-y-1">
-                <p className="text-sm text-gray-400">{metric.title}</p>
-                <p className="text-2xl font-bold text-white">
-                  {metric.prefix}
-                  <AnimatedCounter end={metric.value} />
-                  {metric.suffix}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Main Chart and Activity */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Usage Chart */}
-        <Card className="glass-card border-0 lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="text-white">Usage Overview</CardTitle>
+        <Card className="glass-card border-gray-700">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-gray-300">Total Requests Today</CardTitle>
+            <Activity className="h-4 w-4 text-blue-400" />
           </CardHeader>
           <CardContent>
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                  <XAxis dataKey="name" stroke="#9CA3AF" />
-                  <YAxis stroke="#9CA3AF" />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: '#1F2937', 
-                      border: '1px solid #374151',
-                      borderRadius: '8px',
-                      color: '#fff'
-                    }} 
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="requests" 
-                    stroke="#3B82F6" 
-                    strokeWidth={3}
-                    dot={{ fill: '#3B82F6', strokeWidth: 2, r: 4 }}
-                    activeDot={{ r: 6, fill: '#3B82F6' }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
+            <div className="text-2xl font-bold text-white">{stats?.totalRequests?.toLocaleString() || '0'}</div>
+            <p className="text-xs text-gray-400">
+              <span className="text-green-400">+12%</span> from yesterday
+            </p>
           </CardContent>
         </Card>
 
-        {/* Recent Activity */}
-        <Card className="glass-card border-0">
-          <CardHeader>
-            <CardTitle className="text-white">Recent Activity</CardTitle>
+        <Card className="glass-card border-gray-700">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-gray-300">Cost Today</CardTitle>
+            <DollarSign className="h-4 w-4 text-green-400" />
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {recentActivity.map((activity, index) => (
-                <div key={index} className="flex items-start space-x-3">
-                  <div className={`w-2 h-2 rounded-full mt-2 ${
-                    activity.type === 'success' ? 'bg-green-400' :
-                    activity.type === 'warning' ? 'bg-yellow-400' :
-                    'bg-blue-400'
-                  }`}></div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-white">{activity.action}</p>
-                    <p className="text-xs text-gray-400">{activity.time}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <div className="text-2xl font-bold text-white">${stats?.totalCost?.toFixed(2) || '0.00'}</div>
+            <p className="text-xs text-gray-400">
+              <span className="text-green-400">Monthly: ${stats?.monthlyBilling?.toFixed(2) || '0.00'}</span>
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="glass-card border-gray-700">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-gray-300">Response Time</CardTitle>
+            <Clock className="h-4 w-4 text-yellow-400" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-white">{stats?.avgResponseTime || 0}ms</div>
+            <p className="text-xs text-gray-400">
+              <span className="text-green-400">-5%</span> faster than average
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="glass-card border-gray-700">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-gray-300">Success Rate</CardTitle>
+            <CheckCircle className="h-4 w-4 text-green-400" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-white">{stats?.successRate || 0}%</div>
+            <Progress value={stats?.successRate || 0} className="mt-2" />
           </CardContent>
         </Card>
       </div>
 
-      {/* Quick Actions */}
-      <Card className="glass-card border-0">
+      {/* Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card className="glass-card border-gray-700">
+          <CardHeader>
+            <CardTitle className="text-white">API Usage Trend (7 days)</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {analyticsLoading ? (
+              <div className="h-[300px] animate-pulse bg-gray-200 rounded"></div>
+            ) : (
+              <ChartContainer config={{
+                requests: { label: "Requests", color: "#3b82f6" }
+              }} className="h-[300px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={processedAnalytics}>
+                    <XAxis dataKey="date" />
+                    <YAxis />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Area type="monotone" dataKey="requests" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.2} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </ChartContainer>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="glass-card border-gray-700">
+          <CardHeader>
+            <CardTitle className="text-white">Cost Trend (7 days)</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {analyticsLoading ? (
+              <div className="h-[300px] animate-pulse bg-gray-200 rounded"></div>
+            ) : (
+              <ChartContainer config={{
+                cost: { label: "Cost ($)", color: "#10b981" }
+              }} className="h-[300px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={processedAnalytics}>
+                    <XAxis dataKey="date" />
+                    <YAxis />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Line type="monotone" dataKey="cost" stroke="#10b981" strokeWidth={2} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </ChartContainer>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Recent Activity */}
+      <Card className="glass-card border-gray-700">
         <CardHeader>
-          <CardTitle className="text-white">Quick Actions</CardTitle>
+          <CardTitle className="text-white">Recent API Calls</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Button className="bg-blue-600 hover:bg-blue-700 justify-start">
-              <Zap className="w-4 h-4 mr-2" />
-              Generate API Key
-            </Button>
-            <Button variant="outline" className="border-gray-600 text-gray-300 hover:bg-gray-700 justify-start">
-              <TrendingUp className="w-4 h-4 mr-2" />
-              View Analytics
-            </Button>
-            <Button variant="outline" className="border-gray-600 text-gray-300 hover:bg-gray-700 justify-start">
-              <DollarSign className="w-4 h-4 mr-2" />
-              Billing Settings
-            </Button>
-            <Button variant="outline" className="border-gray-600 text-gray-300 hover:bg-gray-700 justify-start">
-              <Activity className="w-4 h-4 mr-2" />
-              System Status
-            </Button>
+          <div className="space-y-4">
+            {stats?.recentCalls?.slice(0, 5).map((call, index) => (
+              <div key={call.request_id || index} className="flex items-center justify-between p-3 bg-gray-800/50 rounded-lg">
+                <div className="flex items-center space-x-3">
+                  <div className={`w-2 h-2 rounded-full ${call.status === 'success' ? 'bg-green-400' : 'bg-red-400'}`}></div>
+                  <div>
+                    <p className="text-white font-medium">{call.ai_models?.name || 'Unknown Model'}</p>
+                    <p className="text-xs text-gray-400">
+                      {call.users?.full_name || 'Unknown User'} • {call.total_tokens} tokens
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-white">${call.total_cost?.toFixed(4) || '0.0000'}</p>
+                  <p className="text-xs text-gray-400">{call.response_time_ms}ms</p>
+                </div>
+              </div>
+            )) || (
+              <p className="text-gray-400 text-center py-8">No recent API calls</p>
+            )}
           </div>
         </CardContent>
       </Card>
