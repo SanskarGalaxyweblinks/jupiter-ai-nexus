@@ -1,69 +1,22 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { 
   TrendingUp, 
-  Zap, 
   DollarSign, 
   Activity,
-  Users,
   Clock,
-  AlertTriangle,
   CheckCircle
 } from 'lucide-react';
-import { 
-  ChartContainer, 
-  ChartTooltip, 
-  ChartTooltipContent 
-} from '@/components/ui/chart';
-import { LineChart, Line, AreaChart, Area, XAxis, YAxis, ResponsiveContainer } from 'recharts';
-import { useDashboardStats, useUsageAnalytics } from '@/hooks/useDashboardData';
-import { useRealTimeUpdates } from '@/hooks/useRealTimeUpdates';
+import { useDashboardStats } from '@/hooks/useDashboardData';
 
 const HomePage = () => {
-  // Enable real-time updates
-  useRealTimeUpdates();
-  
   // Fetch real data
-  const { data: stats, isLoading: statsLoading } = useDashboardStats();
-  const { data: analyticsData, isLoading: analyticsLoading } = useUsageAnalytics('7d');
+  const { data: stats, isLoading } = useDashboardStats();
 
-  // Process analytics data for charts
-  const processedAnalytics = React.useMemo(() => {
-    if (!analyticsData) return [];
-    
-    // Group by date and sum across models
-    const grouped = analyticsData.reduce((acc, item) => {
-      const date = item.usage_date;
-      if (!acc[date]) {
-        acc[date] = {
-          date,
-          requests: 0,
-          cost: 0,
-          tokens: 0,
-          response_time: 0,
-          count: 0
-        };
-      }
-      acc[date].requests += item.total_requests || 0;
-      acc[date].cost += item.total_cost || 0;
-      acc[date].tokens += item.total_tokens || 0;
-      acc[date].response_time += item.avg_response_time_ms || 0;
-      acc[date].count += 1;
-      return acc;
-    }, {} as any);
-
-    return Object.values(grouped).map((item: any) => ({
-      ...item,
-      response_time: item.count > 0 ? Math.round(item.response_time / item.count) : 0,
-      date: new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-    }));
-  }, [analyticsData]);
-
-  if (statsLoading) {
+  if (isLoading) {
     return (
       <div className="p-6 space-y-6">
         <div className="animate-pulse">
@@ -83,7 +36,7 @@ const HomePage = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-600 mt-1">Real-time AI model usage analytics and insights</p>
+          <p className="text-gray-600 mt-1">AI model usage and billing overview</p>
         </div>
         <div className="flex space-x-2">
           <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
@@ -146,71 +99,6 @@ const HomePage = () => {
         </Card>
       </div>
 
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="bg-white border border-gray-200 shadow-sm">
-          <CardHeader>
-            <CardTitle className="text-gray-900">Model Usage Trend (7 days)</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {analyticsLoading ? (
-              <div className="h-[300px] animate-pulse bg-gray-100 rounded"></div>
-            ) : (
-              <ChartContainer config={{
-                requests: { label: "Requests", color: "#3b82f6" }
-              }} className="h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={processedAnalytics}>
-                    <XAxis 
-                      dataKey="date" 
-                      tick={{ fill: '#6b7280', fontSize: 12 }}
-                      axisLine={{ stroke: '#e5e7eb' }}
-                    />
-                    <YAxis 
-                      tick={{ fill: '#6b7280', fontSize: 12 }}
-                      axisLine={{ stroke: '#e5e7eb' }}
-                    />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <Area type="monotone" dataKey="requests" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.2} />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </ChartContainer>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card className="bg-white border border-gray-200 shadow-sm">
-          <CardHeader>
-            <CardTitle className="text-gray-900">Cost Trend (7 days)</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {analyticsLoading ? (
-              <div className="h-[300px] animate-pulse bg-gray-100 rounded"></div>
-            ) : (
-              <ChartContainer config={{
-                cost: { label: "Cost ($)", color: "#10b981" }
-              }} className="h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={processedAnalytics}>
-                    <XAxis 
-                      dataKey="date"
-                      tick={{ fill: '#6b7280', fontSize: 12 }}
-                      axisLine={{ stroke: '#e5e7eb' }}
-                    />
-                    <YAxis 
-                      tick={{ fill: '#6b7280', fontSize: 12 }}
-                      axisLine={{ stroke: '#e5e7eb' }}
-                    />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <Line type="monotone" dataKey="cost" stroke="#10b981" strokeWidth={2} />
-                  </LineChart>
-                </ResponsiveContainer>
-              </ChartContainer>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
       {/* Recent Activity */}
       <Card className="bg-white border border-gray-200 shadow-sm">
         <CardHeader>
@@ -237,6 +125,31 @@ const HomePage = () => {
             )) || (
               <p className="text-gray-600 text-center py-8">No recent model usage</p>
             )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Quick Actions */}
+      <Card className="bg-white border border-gray-200 shadow-sm">
+        <CardHeader>
+          <CardTitle className="text-gray-900">Quick Actions</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <h3 className="text-gray-900 font-medium mb-2">View Billing Details</h3>
+              <p className="text-gray-600 text-sm mb-3">Check your current usage and billing information</p>
+              <a href="/dashboard/billing" className="text-blue-600 hover:text-blue-700 text-sm font-medium">
+                Go to Billing →
+              </a>
+            </div>
+            <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+              <h3 className="text-gray-900 font-medium mb-2">Update Profile</h3>
+              <p className="text-gray-600 text-sm mb-3">Manage your account settings and preferences</p>
+              <a href="/dashboard/settings" className="text-green-600 hover:text-green-700 text-sm font-medium">
+                Go to Settings →
+              </a>
+            </div>
           </div>
         </CardContent>
       </Card>

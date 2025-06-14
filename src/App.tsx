@@ -11,8 +11,6 @@ import Auth from "./pages/Auth";
 import AuthCallback from "./pages/AuthCallback";
 import DashboardLayout from "./components/DashboardLayout";
 import HomePage from "./pages/HomePage";
-import UsageAnalytics from "./pages/UsageAnalytics";
-import APIUsage from "./pages/APIUsage";
 import BillingPage from "./pages/BillingPage";
 import ProfileSettings from "./pages/ProfileSettings";
 import NotFound from "./pages/NotFound";
@@ -22,6 +20,8 @@ const queryClient = new QueryClient({
     queries: {
       staleTime: 5 * 60 * 1000, // 5 minutes
       refetchOnWindowFocus: false,
+      retry: 1,
+      gcTime: 10 * 60 * 1000, // 10 minutes
     },
   },
 });
@@ -43,8 +43,6 @@ const App = () => (
               </ProtectedRoute>
             }>
               <Route index element={<HomePage />} />
-              <Route path="analytics" element={<UsageAnalytics />} />
-              <Route path="api-usage" element={<APIUsage />} />
               <Route path="billing" element={<BillingPage />} />
               <Route path="settings" element={<ProfileSettings />} />
             </Route>

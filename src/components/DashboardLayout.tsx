@@ -4,8 +4,6 @@ import { Outlet, Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { 
   BarChart3, 
-  TrendingUp, 
-  Zap, 
   CreditCard, 
   Settings, 
   Menu, 
@@ -42,8 +40,6 @@ const DashboardLayout = () => {
 
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: BarChart3 },
-    { name: 'Usage Analytics', href: '/dashboard/analytics', icon: TrendingUp },
-    { name: 'Model Usage', href: '/dashboard/api-usage', icon: Zap },
     { name: 'Billing & Usage', href: '/dashboard/billing', icon: CreditCard },
     { name: 'Profile Settings', href: '/dashboard/settings', icon: Settings },
   ];
@@ -173,13 +169,17 @@ const DashboardLayout = () => {
                       <p className="text-xs text-gray-600">{userEmail}</p>
                     </div>
                     <DropdownMenuSeparator className="bg-gray-200" />
-                    <DropdownMenuItem className="text-gray-700 hover:text-gray-900 hover:bg-gray-50">
-                      <User className="w-4 h-4 mr-2" />
-                      Profile
+                    <DropdownMenuItem asChild>
+                      <Link to="/dashboard/settings" className="text-gray-700 hover:text-gray-900 hover:bg-gray-50">
+                        <User className="w-4 h-4 mr-2" />
+                        Profile
+                      </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem className="text-gray-700 hover:text-gray-900 hover:bg-gray-50">
-                      <Settings className="w-4 h-4 mr-2" />
-                      Settings
+                    <DropdownMenuItem asChild>
+                      <Link to="/dashboard/settings" className="text-gray-700 hover:text-gray-900 hover:bg-gray-50">
+                        <Settings className="w-4 h-4 mr-2" />
+                        Settings
+                      </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator className="bg-gray-200" />
                     <DropdownMenuItem 
