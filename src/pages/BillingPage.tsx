@@ -256,7 +256,7 @@ const BillingPage = () => {
                     borderRadius: '8px',
                     color: '#fff'
                   }}
-                  formatter={(value) => [`$${value.toFixed(2)}`, 'Cost']}
+                  formatter={(value: any) => [`$${Number(value).toFixed(2)}`, 'Cost']}
                 />
                 <Bar dataKey="cost" fill="#3B82F6" radius={[4, 4, 0, 0]} />
               </BarChart>

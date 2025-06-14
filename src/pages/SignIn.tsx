@@ -19,6 +19,10 @@ const SignIn = () => {
     window.location.href = '/dashboard';
   };
 
+  const handleRememberMeChange = (checked: boolean | "indeterminate") => {
+    setRememberMe(checked === true);
+  };
+
   return (
     <div className="min-h-screen relative flex">
       <JupiterBackground />
@@ -90,7 +94,7 @@ const SignIn = () => {
                   <Checkbox
                     id="remember"
                     checked={rememberMe}
-                    onCheckedChange={setRememberMe}
+                    onCheckedChange={handleRememberMeChange}
                   />
                   <Label htmlFor="remember" className="text-sm text-gray-300">
                     Remember me
