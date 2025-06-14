@@ -43,7 +43,7 @@ const LandingPage = () => {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/auth">
               <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-lg px-8 py-3">
-                Start Free Trial
+                Get Started Today
               </Button>
             </Link>
             <Button size="lg" variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-50 text-lg px-8 py-3">
@@ -159,7 +159,7 @@ const LandingPage = () => {
           </p>
           <Link to="/auth">
             <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100 text-lg px-8 py-3">
-              Start Your Free Trial
+              Start Using JupiterBrains
             </Button>
           </Link>
         </div>
