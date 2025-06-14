@@ -22,11 +22,13 @@ import {
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/hooks/useAuth';
+import { useUserProfile } from '@/hooks/useDashboardData';
 
 const DashboardLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
   const { user, signOut } = useAuth();
+  const { data: userProfile } = useUserProfile();
 
   // Get user initials from real user data
   const getUserInitials = (fullName: string) => {
@@ -51,8 +53,8 @@ const DashboardLayout = () => {
     return location.pathname.startsWith(href);
   };
 
-  const userInitials = getUserInitials(user?.user_metadata?.full_name || user?.email || '');
-  const userDisplayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
+  const userInitials = getUserInitials(userProfile?.full_name || user?.user_metadata?.full_name || user?.email || '');
+  const userDisplayName = userProfile?.full_name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
   const userEmail = user?.email || '';
 
   return (
@@ -122,7 +124,9 @@ const DashboardLayout = () => {
                 </Avatar>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-gray-900 truncate">{userDisplayName}</p>
-                  <p className="text-xs text-gray-600 truncate">Professional Plan</p>
+                  <p className="text-xs text-gray-600 truncate">
+                    {userProfile?.organizations?.name || 'Professional Plan'}
+                  </p>
                 </div>
               </div>
             </div>

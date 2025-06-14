@@ -10,13 +10,13 @@ import {
   Clock,
   CheckCircle
 } from 'lucide-react';
-import { useDashboardStats } from '@/hooks/useDashboardData';
+import { useDashboardStats, useUserProfile } from '@/hooks/useDashboardData';
 
 const HomePage = () => {
-  // Fetch real data
-  const { data: stats, isLoading } = useDashboardStats();
+  const { data: stats, isLoading: statsLoading } = useDashboardStats();
+  const { data: userProfile, isLoading: profileLoading } = useUserProfile();
 
-  if (isLoading) {
+  if (statsLoading || profileLoading) {
     return (
       <div className="p-6 space-y-6">
         <div className="animate-pulse">
@@ -36,12 +36,14 @@ const HomePage = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-600 mt-1">AI model usage and billing overview</p>
+          <p className="text-gray-600 mt-1">
+            Welcome back, {userProfile?.full_name || 'User'}! Here's your AI model usage overview.
+          </p>
         </div>
         <div className="flex space-x-2">
           <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
             <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-            Live Data
+            {stats?.recentCalls?.length ? 'Live Data' : 'Demo Data'}
           </Badge>
         </div>
       </div>
@@ -106,24 +108,29 @@ const HomePage = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {stats?.recentCalls?.slice(0, 5).map((call, index) => (
-              <div key={call.request_id || index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
-                <div className="flex items-center space-x-3">
-                  <div className={`w-2 h-2 rounded-full ${call.status === 'success' ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                  <div>
-                    <p className="text-gray-900 font-medium">{call.ai_models?.name || 'Unknown Model'}</p>
-                    <p className="text-xs text-gray-600">
-                      {call.users?.full_name || 'Unknown User'} • {call.total_tokens} tokens
-                    </p>
+            {stats?.recentCalls?.length ? (
+              stats.recentCalls.slice(0, 5).map((call, index) => (
+                <div key={call.request_id || index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
+                  <div className="flex items-center space-x-3">
+                    <div className={`w-2 h-2 rounded-full ${call.status === 'success' ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                    <div>
+                      <p className="text-gray-900 font-medium">{call.ai_models?.name || 'Unknown Model'}</p>
+                      <p className="text-xs text-gray-600">
+                        {call.users?.full_name || 'Unknown User'} • {call.total_tokens} tokens
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-gray-900 font-medium">${call.total_cost?.toFixed(4) || '0.0000'}</p>
+                    <p className="text-xs text-gray-600">{call.response_time_ms}ms</p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-gray-900 font-medium">${call.total_cost?.toFixed(4) || '0.0000'}</p>
-                  <p className="text-xs text-gray-600">{call.response_time_ms}ms</p>
-                </div>
+              ))
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-gray-600">No recent model usage found</p>
+                <p className="text-xs text-gray-500 mt-2">Start using AI models to see activity here</p>
               </div>
-            )) || (
-              <p className="text-gray-600 text-center py-8">No recent model usage</p>
             )}
           </div>
         </CardContent>
