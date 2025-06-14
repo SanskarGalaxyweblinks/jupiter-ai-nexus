@@ -1,8 +1,8 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import JupiterBrainsLogo from '@/components/JupiterBrainsLogo';
 
 const LandingPage = () => {
   return (
@@ -10,11 +10,7 @@ const LandingPage = () => {
       {/* Header */}
       <header className="border-b border-gray-200 bg-white/80 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <h1 className="text-2xl font-bold text-gray-900">
-              Jupiter<span className="text-blue-600">Brains</span>
-            </h1>
-          </div>
+          <JupiterBrainsLogo size="lg" variant="color" />
           <div className="flex items-center space-x-4">
             <Link to="/auth">
               <Button variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-50">
@@ -33,6 +29,9 @@ const LandingPage = () => {
       {/* Hero Section */}
       <section className="py-20 px-4">
         <div className="container mx-auto text-center max-w-4xl">
+          <div className="flex justify-center mb-8">
+            <JupiterBrainsLogo size="xl" variant="color" showText={false} />
+          </div>
           <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
             Professional AI Analytics Platform
           </h1>
@@ -170,9 +169,7 @@ const LandingPage = () => {
         <div className="container mx-auto max-w-6xl">
           <div className="grid md:grid-cols-4 gap-8">
             <div>
-              <h3 className="text-xl font-bold mb-4">
-                Jupiter<span className="text-blue-400">Brains</span>
-              </h3>
+              <JupiterBrainsLogo size="md" variant="light" className="mb-4" />
               <p className="text-gray-400">
                 Professional AI analytics and usage tracking for modern businesses.
               </p>

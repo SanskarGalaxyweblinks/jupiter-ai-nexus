@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -13,6 +12,7 @@ import {
   LogOut
 } from 'lucide-react';
 import JupiterBackground from '@/components/JupiterBackground';
+import JupiterBrainsLogo from '@/components/JupiterBrainsLogo';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { 
   DropdownMenu, 
@@ -74,13 +74,8 @@ const DashboardLayout = () => {
           <div className="glass-card h-full border-r border-gray-200 flex flex-col">
             {/* Sidebar header */}
             <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <Link to="/dashboard" className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center">
-                  <span className="text-white font-bold text-lg">J</span>
-                </div>
-                <span className="text-xl font-bold text-gray-900">
-                  Jupiter<span className="text-blue-600">Brains</span>
-                </span>
+              <Link to="/dashboard">
+                <JupiterBrainsLogo size="md" variant="color" />
               </Link>
               <Button
                 variant="ghost"
