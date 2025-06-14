@@ -4,9 +4,11 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/hooks/useAuth";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import LandingPage from "./pages/LandingPage";
-import SignIn from "./pages/SignIn";
-import SignUp from "./pages/SignUp";
+import Auth from "./pages/Auth";
+import AuthCallback from "./pages/AuthCallback";
 import DashboardLayout from "./components/DashboardLayout";
 import HomePage from "./pages/HomePage";
 import UsageAnalytics from "./pages/UsageAnalytics";
@@ -15,29 +17,42 @@ import BillingPage from "./pages/BillingPage";
 import ProfileSettings from "./pages/ProfileSettings";
 import NotFound from "./pages/NotFound";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/signin" element={<SignIn />} />
-          <Route path="/signup" element={<SignUp />} />
-          <Route path="/dashboard" element={<DashboardLayout />}>
-            <Route index element={<HomePage />} />
-            <Route path="analytics" element={<UsageAnalytics />} />
-            <Route path="api-usage" element={<APIUsage />} />
-            <Route path="billing" element={<BillingPage />} />
-            <Route path="settings" element={<ProfileSettings />} />
-          </Route>
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+    <AuthProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
+            <Route path="/dashboard" element={
+              <ProtectedRoute>
+                <DashboardLayout />
+              </ProtectedRoute>
+            }>
+              <Route index element={<HomePage />} />
+              <Route path="analytics" element={<UsageAnalytics />} />
+              <Route path="api-usage" element={<APIUsage />} />
+              <Route path="billing" element={<BillingPage />} />
+              <Route path="settings" element={<ProfileSettings />} />
+            </Route>
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 

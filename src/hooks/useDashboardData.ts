@@ -14,7 +14,7 @@ export const useDashboardStats = () => {
         .from('organizations')
         .select('id')
         .eq('slug', DEMO_ORG_ID)
-        .single();
+        .maybeSingle();
 
       if (!org) throw new Error('Organization not found');
 
