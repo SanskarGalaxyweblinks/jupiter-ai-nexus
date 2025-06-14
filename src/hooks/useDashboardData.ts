@@ -1,13 +1,16 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 
 // Sample organization ID for demo - in production this would come from auth
 const DEMO_ORG_ID = 'acme-corp';
 
 export const useDashboardStats = () => {
+  const { user } = useAuth();
+  
   return useQuery({
-    queryKey: ['dashboard', 'stats'],
+    queryKey: ['dashboard', 'stats', user?.id],
     queryFn: async () => {
       // Get organization ID first
       const { data: org } = await supabase
@@ -78,20 +81,24 @@ export const useDashboardStats = () => {
         todayUsage: todayUsage || []
       };
     },
-    refetchInterval: 30000 // Refresh every 30 seconds
+    enabled: !!user,
+    refetchInterval: 30000, // Refresh every 30 seconds
+    staleTime: 15000 // Consider data stale after 15 seconds
   });
 };
 
 export const useUsageAnalytics = (dateRange: string = '7d') => {
+  const { user } = useAuth();
+  
   return useQuery({
-    queryKey: ['analytics', 'usage', dateRange],
+    queryKey: ['analytics', 'usage', dateRange, user?.id],
     queryFn: async () => {
       // Get organization ID
       const { data: org } = await supabase
         .from('organizations')
         .select('id')
         .eq('slug', DEMO_ORG_ID)
-        .single();
+        .maybeSingle();
 
       if (!org) throw new Error('Organization not found');
 
@@ -114,20 +121,24 @@ export const useUsageAnalytics = (dateRange: string = '7d') => {
         .order('usage_date', { ascending: true });
       
       return data || [];
-    }
+    },
+    enabled: !!user,
+    staleTime: 5 * 60 * 1000 // Consider data stale after 5 minutes
   });
 };
 
 export const useBillingInfo = () => {
+  const { user } = useAuth();
+  
   return useQuery({
-    queryKey: ['billing'],
+    queryKey: ['billing', user?.id],
     queryFn: async () => {
       // Get organization ID
       const { data: org } = await supabase
         .from('organizations')
         .select('id')
         .eq('slug', DEMO_ORG_ID)
-        .single();
+        .maybeSingle();
 
       if (!org) throw new Error('Organization not found');
 
@@ -165,20 +176,24 @@ export const useBillingInfo = () => {
         invoiceHistory: invoiceHistory || [],
         paymentMethods: paymentMethods || []
       };
-    }
+    },
+    enabled: !!user,
+    staleTime: 5 * 60 * 1000 // Consider data stale after 5 minutes
   });
 };
 
 export const useAPIUsage = () => {
+  const { user } = useAuth();
+  
   return useQuery({
-    queryKey: ['api', 'usage'],
+    queryKey: ['api', 'usage', user?.id],
     queryFn: async () => {
       // Get organization ID
       const { data: org } = await supabase
         .from('organizations')
         .select('id')
         .eq('slug', DEMO_ORG_ID)
-        .single();
+        .maybeSingle();
 
       if (!org) throw new Error('Organization not found');
 
@@ -194,7 +209,7 @@ export const useAPIUsage = () => {
         .order('created_at', { ascending: false })
         .limit(50);
 
-      // Get API keys
+      // Get API keys (representing available models)
       const { data: apiKeys } = await supabase
         .from('api_keys')
         .select('*')
@@ -205,6 +220,8 @@ export const useAPIUsage = () => {
         apiLogs: apiLogs || [],
         apiKeys: apiKeys || []
       };
-    }
+    },
+    enabled: !!user,
+    staleTime: 30 * 1000 // Consider data stale after 30 seconds
   });
 };

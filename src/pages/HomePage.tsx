@@ -79,15 +79,15 @@ const HomePage = () => {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-white">Dashboard</h1>
-          <p className="text-gray-400 mt-1">Real-time AI usage analytics and insights</p>
+          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+          <p className="text-gray-600 mt-1">Real-time AI model usage analytics and insights</p>
         </div>
         <div className="flex space-x-2">
-          <Badge variant="outline" className="bg-green-500/10 text-green-400 border-green-500/20">
-            <div className="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
+          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+            <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
             Live Data
           </Badge>
         </div>
@@ -95,52 +95,52 @@ const HomePage = () => {
 
       {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="glass-card border-gray-700">
+        <Card className="bg-white border border-gray-200 shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-300">Total Requests Today</CardTitle>
-            <Activity className="h-4 w-4 text-blue-400" />
+            <CardTitle className="text-sm font-medium text-gray-600">Total Requests Today</CardTitle>
+            <Activity className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">{stats?.totalRequests?.toLocaleString() || '0'}</div>
-            <p className="text-xs text-gray-400">
-              <span className="text-green-400">+12%</span> from yesterday
+            <div className="text-2xl font-bold text-gray-900">{stats?.totalRequests?.toLocaleString() || '0'}</div>
+            <p className="text-xs text-gray-600">
+              <span className="text-green-600 font-medium">+12%</span> from yesterday
             </p>
           </CardContent>
         </Card>
 
-        <Card className="glass-card border-gray-700">
+        <Card className="bg-white border border-gray-200 shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-300">Cost Today</CardTitle>
-            <DollarSign className="h-4 w-4 text-green-400" />
+            <CardTitle className="text-sm font-medium text-gray-600">Cost Today</CardTitle>
+            <DollarSign className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">${stats?.totalCost?.toFixed(2) || '0.00'}</div>
-            <p className="text-xs text-gray-400">
-              <span className="text-green-400">Monthly: ${stats?.monthlyBilling?.toFixed(2) || '0.00'}</span>
+            <div className="text-2xl font-bold text-gray-900">${stats?.totalCost?.toFixed(2) || '0.00'}</div>
+            <p className="text-xs text-gray-600">
+              <span className="text-gray-500">Monthly: ${stats?.monthlyBilling?.toFixed(2) || '0.00'}</span>
             </p>
           </CardContent>
         </Card>
 
-        <Card className="glass-card border-gray-700">
+        <Card className="bg-white border border-gray-200 shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-300">Response Time</CardTitle>
-            <Clock className="h-4 w-4 text-yellow-400" />
+            <CardTitle className="text-sm font-medium text-gray-600">Response Time</CardTitle>
+            <Clock className="h-4 w-4 text-yellow-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">{stats?.avgResponseTime || 0}ms</div>
-            <p className="text-xs text-gray-400">
-              <span className="text-green-400">-5%</span> faster than average
+            <div className="text-2xl font-bold text-gray-900">{stats?.avgResponseTime || 0}ms</div>
+            <p className="text-xs text-gray-600">
+              <span className="text-green-600 font-medium">-5%</span> faster than average
             </p>
           </CardContent>
         </Card>
 
-        <Card className="glass-card border-gray-700">
+        <Card className="bg-white border border-gray-200 shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-300">Success Rate</CardTitle>
-            <CheckCircle className="h-4 w-4 text-green-400" />
+            <CardTitle className="text-sm font-medium text-gray-600">Success Rate</CardTitle>
+            <CheckCircle className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">{stats?.successRate || 0}%</div>
+            <div className="text-2xl font-bold text-gray-900">{stats?.successRate || 0}%</div>
             <Progress value={stats?.successRate || 0} className="mt-2" />
           </CardContent>
         </Card>
@@ -148,21 +148,28 @@ const HomePage = () => {
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="glass-card border-gray-700">
+        <Card className="bg-white border border-gray-200 shadow-sm">
           <CardHeader>
-            <CardTitle className="text-white">API Usage Trend (7 days)</CardTitle>
+            <CardTitle className="text-gray-900">Model Usage Trend (7 days)</CardTitle>
           </CardHeader>
           <CardContent>
             {analyticsLoading ? (
-              <div className="h-[300px] animate-pulse bg-gray-200 rounded"></div>
+              <div className="h-[300px] animate-pulse bg-gray-100 rounded"></div>
             ) : (
               <ChartContainer config={{
                 requests: { label: "Requests", color: "#3b82f6" }
               }} className="h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={processedAnalytics}>
-                    <XAxis dataKey="date" />
-                    <YAxis />
+                    <XAxis 
+                      dataKey="date" 
+                      tick={{ fill: '#6b7280', fontSize: 12 }}
+                      axisLine={{ stroke: '#e5e7eb' }}
+                    />
+                    <YAxis 
+                      tick={{ fill: '#6b7280', fontSize: 12 }}
+                      axisLine={{ stroke: '#e5e7eb' }}
+                    />
                     <ChartTooltip content={<ChartTooltipContent />} />
                     <Area type="monotone" dataKey="requests" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.2} />
                   </AreaChart>
@@ -172,21 +179,28 @@ const HomePage = () => {
           </CardContent>
         </Card>
 
-        <Card className="glass-card border-gray-700">
+        <Card className="bg-white border border-gray-200 shadow-sm">
           <CardHeader>
-            <CardTitle className="text-white">Cost Trend (7 days)</CardTitle>
+            <CardTitle className="text-gray-900">Cost Trend (7 days)</CardTitle>
           </CardHeader>
           <CardContent>
             {analyticsLoading ? (
-              <div className="h-[300px] animate-pulse bg-gray-200 rounded"></div>
+              <div className="h-[300px] animate-pulse bg-gray-100 rounded"></div>
             ) : (
               <ChartContainer config={{
                 cost: { label: "Cost ($)", color: "#10b981" }
               }} className="h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={processedAnalytics}>
-                    <XAxis dataKey="date" />
-                    <YAxis />
+                    <XAxis 
+                      dataKey="date"
+                      tick={{ fill: '#6b7280', fontSize: 12 }}
+                      axisLine={{ stroke: '#e5e7eb' }}
+                    />
+                    <YAxis 
+                      tick={{ fill: '#6b7280', fontSize: 12 }}
+                      axisLine={{ stroke: '#e5e7eb' }}
+                    />
                     <ChartTooltip content={<ChartTooltipContent />} />
                     <Line type="monotone" dataKey="cost" stroke="#10b981" strokeWidth={2} />
                   </LineChart>
@@ -198,30 +212,30 @@ const HomePage = () => {
       </div>
 
       {/* Recent Activity */}
-      <Card className="glass-card border-gray-700">
+      <Card className="bg-white border border-gray-200 shadow-sm">
         <CardHeader>
-          <CardTitle className="text-white">Recent API Calls</CardTitle>
+          <CardTitle className="text-gray-900">Recent Model Usage</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             {stats?.recentCalls?.slice(0, 5).map((call, index) => (
-              <div key={call.request_id || index} className="flex items-center justify-between p-3 bg-gray-800/50 rounded-lg">
+              <div key={call.request_id || index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
                 <div className="flex items-center space-x-3">
-                  <div className={`w-2 h-2 rounded-full ${call.status === 'success' ? 'bg-green-400' : 'bg-red-400'}`}></div>
+                  <div className={`w-2 h-2 rounded-full ${call.status === 'success' ? 'bg-green-500' : 'bg-red-500'}`}></div>
                   <div>
-                    <p className="text-white font-medium">{call.ai_models?.name || 'Unknown Model'}</p>
-                    <p className="text-xs text-gray-400">
+                    <p className="text-gray-900 font-medium">{call.ai_models?.name || 'Unknown Model'}</p>
+                    <p className="text-xs text-gray-600">
                       {call.users?.full_name || 'Unknown User'} • {call.total_tokens} tokens
                     </p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-white">${call.total_cost?.toFixed(4) || '0.0000'}</p>
-                  <p className="text-xs text-gray-400">{call.response_time_ms}ms</p>
+                  <p className="text-gray-900 font-medium">${call.total_cost?.toFixed(4) || '0.0000'}</p>
+                  <p className="text-xs text-gray-600">{call.response_time_ms}ms</p>
                 </div>
               </div>
             )) || (
-              <p className="text-gray-400 text-center py-8">No recent API calls</p>
+              <p className="text-gray-600 text-center py-8">No recent model usage</p>
             )}
           </div>
         </CardContent>

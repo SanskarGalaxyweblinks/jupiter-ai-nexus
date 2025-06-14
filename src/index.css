@@ -47,9 +47,32 @@
     @apply bg-background text-foreground;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
+  
+  /* URGENT: Fix all text visibility */
+  h1, h2, h3, h4, h5, h6 {
+    @apply text-gray-900 font-semibold;
+  }
+  
+  p, span, div, label {
+    @apply text-gray-700;
+  }
+  
+  /* Ensure sidebar text is visible */
+  .sidebar-text {
+    @apply text-gray-900 !important;
+  }
+  
+  /* Navigation text visibility */
+  nav a, nav button {
+    @apply text-gray-700 hover:text-gray-900;
+  }
+  
+  nav a.active {
+    @apply text-blue-600 bg-blue-50;
+  }
 }
 
-/* Professional background - remove space theme */
+/* Professional background */
 .jupiter-bg {
   position: fixed;
   top: 0;
@@ -60,25 +83,17 @@
   z-index: -1;
 }
 
-/* Remove all space-themed animations */
-.orbital-ring,
-.floating-particle,
-.planet-object,
-.starfield {
-  display: none;
-}
-
 /* Professional glass morphism effects */
 .glass {
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 .glass-card {
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.98);
   backdrop-filter: blur(20px);
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.06);
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
