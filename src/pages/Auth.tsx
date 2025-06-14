@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -8,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
 import JupiterBackground from '@/components/JupiterBackground';
+import JupiterBrainsLogo from '@/components/JupiterBrainsLogo';
 
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -65,10 +65,10 @@ const Auth = () => {
       {/* Left side - Branding */}
       <div className="hidden lg:flex lg:w-1/2 relative z-10 flex-col justify-center items-center p-12 bg-white">
         <div className="text-center max-w-md">
-          <h1 className="text-5xl font-bold text-gray-900 mb-6">
-            Jupiter<span className="text-blue-600">Brains</span>
-          </h1>
-          <p className="text-xl text-gray-600 mb-8">
+          <div className="flex justify-center mb-8">
+            <JupiterBrainsLogo size="xl" variant="color" />
+          </div>
+          <p className="text-xl text-gray-600 mb-8 font-medium">
             Professional AI Analytics & Usage Tracking
           </p>
           <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-8">
@@ -98,12 +98,10 @@ const Auth = () => {
       <div className="w-full lg:w-1/2 relative z-10 flex items-center justify-center p-8">
         <Card className="w-full max-w-md bg-white shadow-lg border-0">
           <CardHeader className="text-center">
-            <div className="lg:hidden mb-4">
-              <h1 className="text-3xl font-bold text-gray-900">
-                Jupiter<span className="text-blue-600">Brains</span>
-              </h1>
+            <div className="lg:hidden mb-6 flex justify-center">
+              <JupiterBrainsLogo size="lg" variant="color" />
             </div>
-            <CardTitle className="text-2xl text-gray-900">Welcome</CardTitle>
+            <CardTitle className="text-2xl text-gray-900 font-bold">Welcome Back</CardTitle>
             <p className="text-gray-600">Access your AI analytics dashboard</p>
           </CardHeader>
           <CardContent>
