@@ -200,3 +200,48 @@ export const useUsageHistory = (days = 7) => {
     gcTime: 30 * 60 * 1000
   });
 };
+
+export const useAvailableModels = () => {
+  return useQuery({
+    queryKey: ['ai-models'],
+    queryFn: async () => {
+      try {
+        const { data: models } = await supabase
+          .from('ai_models')
+          .select('*')
+          .eq('is_active', true)
+          .order('name');
+
+        return models || [];
+      } catch (error) {
+        console.error('Error fetching AI models:', error);
+        return [];
+      }
+    },
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000
+  });
+};
+
+const getDemoOrgId = async () => {
+  try {
+    const { data: org } = await supabase
+      .from('organizations')
+      .select('id')
+      .eq('slug', DEMO_ORG_ID)
+      .maybeSingle();
+    return org?.id;
+  } catch (error) {
+    console.error('Error fetching demo org:', error);
+    return null;
+  }
+};
+
+const getMockDashboardData = () => ({
+  totalRequests: 8542,
+  totalCost: 127.45,
+  avgResponseTime: 245,
+  successRate: 98,
+  recentCalls: [],
+  todayUsage: []
+});
