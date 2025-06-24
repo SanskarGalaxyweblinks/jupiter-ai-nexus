@@ -5,6 +5,29 @@ import { useAuth } from '@/hooks/useAuth';
 
 const DEMO_ORG_ID = 'acme-corp';
 
+const getDemoOrgId = async () => {
+  try {
+    const { data: org } = await supabase
+      .from('organizations')
+      .select('id')
+      .eq('slug', DEMO_ORG_ID)
+      .maybeSingle();
+    return org?.id;
+  } catch (error) {
+    console.error('Error fetching demo org:', error);
+    return null;
+  }
+};
+
+const getMockDashboardData = () => ({
+  totalRequests: 8542,
+  totalCost: 127.45,
+  avgResponseTime: 245,
+  successRate: 98,
+  recentCalls: [],
+  todayUsage: []
+});
+
 export const useDashboardStats = () => {
   const { user } = useAuth();
   
@@ -85,29 +108,6 @@ export const useDashboardStats = () => {
     gcTime: 300000
   });
 };
-
-const getDemoOrgId = async () => {
-  try {
-    const { data: org } = await supabase
-      .from('organizations')
-      .select('id')
-      .eq('slug', DEMO_ORG_ID)
-      .maybeSingle();
-    return org?.id;
-  } catch (error) {
-    console.error('Error fetching demo org:', error);
-    return null;
-  }
-};
-
-const getMockDashboardData = () => ({
-  totalRequests: 8542,
-  totalCost: 127.45,
-  avgResponseTime: 245,
-  successRate: 98,
-  recentCalls: [],
-  todayUsage: []
-});
 
 export const useUserProfile = () => {
   const { user } = useAuth();
@@ -222,26 +222,3 @@ export const useAvailableModels = () => {
     gcTime: 30 * 60 * 1000
   });
 };
-
-const getDemoOrgId = async () => {
-  try {
-    const { data: org } = await supabase
-      .from('organizations')
-      .select('id')
-      .eq('slug', DEMO_ORG_ID)
-      .maybeSingle();
-    return org?.id;
-  } catch (error) {
-    console.error('Error fetching demo org:', error);
-    return null;
-  }
-};
-
-const getMockDashboardData = () => ({
-  totalRequests: 8542,
-  totalCost: 127.45,
-  avgResponseTime: 245,
-  successRate: 98,
-  recentCalls: [],
-  todayUsage: []
-});
