@@ -1,22 +1,17 @@
 
-import { useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useDashboardStats, useUsageHistory } from '@/hooks/useDashboardData';
 import { useRealTimeUpdates } from '@/hooks/useRealTimeUpdates';
 import { ApiUsageSimulator } from '@/components/ApiUsageSimulator';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Activity, DollarSign, Clock, CheckCircle, Zap } from 'lucide-react';
 
 const HomePage = () => {
-  // Set up real-time updates
   useRealTimeUpdates();
   
   const { data: stats, isLoading: statsLoading } = useDashboardStats();
-  const { data: usageHistory } = useUsageHistory(7); // Last 7 days
-
-  console.log('Dashboard stats:', stats);
-  console.log('Usage history:', usageHistory);
+  const { data: usageHistory } = useUsageHistory(7);
 
   if (statsLoading) {
     return (
@@ -28,7 +23,6 @@ const HomePage = () => {
 
   return (
     <div className="space-y-8">
-      {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-gray-900">AI Analytics Dashboard</h1>
         <p className="text-gray-600">Monitor your AI API usage and performance</p>
@@ -83,7 +77,6 @@ const HomePage = () => {
 
       {/* Charts and Simulator */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Usage History Chart */}
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle>Usage History (Last 7 Days)</CardTitle>
@@ -97,14 +90,13 @@ const HomePage = () => {
                 <YAxis yAxisId="left" />
                 <YAxis yAxisId="right" orientation="right" />
                 <Tooltip />
-                <Bar yAxisId="left" dataKey="total_requests" fill="#8884d8" name="Requests" />
+                <Line yAxisId="left" type="monotone" dataKey="total_requests" stroke="#8884d8" name="Requests" />
                 <Line yAxisId="right" type="monotone" dataKey="total_cost" stroke="#82ca9d" name="Cost ($)" />
               </LineChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
 
-        {/* API Usage Simulator */}
         <ApiUsageSimulator />
       </div>
 

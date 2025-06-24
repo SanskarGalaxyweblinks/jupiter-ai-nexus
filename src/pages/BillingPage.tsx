@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -17,36 +18,36 @@ import {
   Plus
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useDashboardStats } from '@/hooks/useDashboardData';
 
 const BillingPage = () => {
   const { toast } = useToast();
   const [showAddPayment, setShowAddPayment] = useState(false);
+  const { data: stats } = useDashboardStats();
 
-  // Mock current usage data - in real app this would come from API
   const currentUsage = {
-    requests: 8542,
+    requests: stats?.totalRequests || 8542,
     requestLimit: 10000,
-    cost: 127.45,
+    cost: stats?.totalCost || 127.45,
     costLimit: 200,
     tokens: 1250000,
     tokenLimit: 2000000
   };
 
-  // Mock billing data since we simplified the database
   const billingData = {
     currentCycle: {
       cycle_start: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString(),
       cycle_end: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).toISOString(),
-      usage_cost: 127.45,
+      usage_cost: currentUsage.cost,
       subscription_cost: 29.00,
-      total_amount: 156.45,
+      total_amount: currentUsage.cost + 29.00,
       billing_line_items: [
         {
           id: '1',
           description: 'AI API Usage',
-          quantity: 8542,
+          quantity: currentUsage.requests,
           unit_type: 'requests',
-          total_amount: 127.45
+          total_amount: currentUsage.cost
         },
         {
           id: '2',
@@ -76,15 +77,6 @@ const BillingPage = () => {
         total_amount: 142.30,
         status: 'paid',
         paid_at: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()
-      },
-      {
-        id: '2',
-        invoice_number: 'INV-002',
-        cycle_start: new Date(new Date().getFullYear(), new Date().getMonth() - 2, 1).toISOString(),
-        cycle_end: new Date(new Date().getFullYear(), new Date().getMonth() - 1, 0).toISOString(),
-        total_amount: 98.75,
-        status: 'paid',
-        paid_at: new Date(new Date().getFullYear(), new Date().getMonth() - 1, 5).toISOString()
       }
     ]
   };
@@ -115,7 +107,6 @@ const BillingPage = () => {
 
   const handleAddPaymentMethod = (e: React.FormEvent) => {
     e.preventDefault();
-    // Mock payment method addition
     toast({
       title: "Payment method added",
       description: "Your payment method has been successfully added.",
@@ -131,12 +122,10 @@ const BillingPage = () => {
           <p className="text-gray-600 mt-1">Monitor your AI model usage and manage billing</p>
         </div>
         
-        <div className="flex space-x-2">
-          <Button variant="outline" size="sm" className="border-gray-300 text-gray-700">
-            <Download className="w-4 h-4 mr-2" />
-            Export
-          </Button>
-        </div>
+        <Button variant="outline" size="sm" className="border-gray-300 text-gray-700">
+          <Download className="w-4 h-4 mr-2" />
+          Export
+        </Button>
       </div>
 
       {/* Current Usage Overview */}
@@ -297,90 +286,31 @@ const BillingPage = () => {
             </div>
           )}
 
-          {billingData?.paymentMethods?.length ? (
-            <div className="space-y-4">
-              {billingData.paymentMethods.map((method: any) => (
-                <div key={method.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-100">
-                  <div className="flex items-center space-x-3">
-                    <CreditCard className="w-8 h-8 text-gray-600" />
-                    <div>
-                      <p className="text-gray-900 font-medium">
-                        {method.brand?.toUpperCase()} •••• {method.last_four}
-                      </p>
-                      <p className="text-gray-600 text-sm">
-                        Expires {method.expiry_month}/{method.expiry_year}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    {method.is_default && (
-                      <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                        Default
-                      </Badge>
-                    )}
-                    <Button variant="ghost" size="sm" className="text-gray-600">Edit</Button>
+          <div className="space-y-4">
+            {billingData.paymentMethods.map((method: any) => (
+              <div key={method.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-100">
+                <div className="flex items-center space-x-3">
+                  <CreditCard className="w-8 h-8 text-gray-600" />
+                  <div>
+                    <p className="text-gray-900 font-medium">
+                      {method.brand?.toUpperCase()} •••• {method.last_four}
+                    </p>
+                    <p className="text-gray-600 text-sm">
+                      Expires {method.expiry_month}/{method.expiry_year}
+                    </p>
                   </div>
                 </div>
-              ))}
-            </div>
-          ) : (
-            !showAddPayment && (
-              <div className="text-center py-8">
-                <CreditCard className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600 mb-4">No payment methods added</p>
-                <Button onClick={() => setShowAddPayment(true)}>Add Payment Method</Button>
-              </div>
-            )
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Invoice History */}
-      <Card className="bg-white border border-gray-200 shadow-sm">
-        <CardHeader>
-          <CardTitle className="text-gray-900">Invoice History</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {billingData?.invoiceHistory?.length ? (
-            <div className="space-y-4">
-              {billingData.invoiceHistory.map((invoice: any) => (
-                <div key={invoice.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-100">
-                  <div className="flex items-center space-x-4">
-                    {getStatusIcon(invoice.status)}
-                    <div>
-                      <p className="text-gray-900 font-medium">
-                        Invoice #{invoice.invoice_number || `INV-${invoice.id.slice(0, 8)}`}
-                      </p>
-                      <p className="text-gray-600 text-sm">
-                        {new Date(invoice.cycle_start).toLocaleDateString()} - {new Date(invoice.cycle_end).toLocaleDateString()}
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center space-x-4">
-                    <Badge variant="outline" className={getStatusColor(invoice.status)}>
-                      {invoice.status}
+                <div className="flex items-center space-x-2">
+                  {method.is_default && (
+                    <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                      Default
                     </Badge>
-                    <div className="text-right">
-                      <p className="text-gray-900 font-medium">${invoice.total_amount}</p>
-                      <p className="text-gray-600 text-sm">
-                        {invoice.paid_at ? `Paid ${new Date(invoice.paid_at).toLocaleDateString()}` : 
-                         invoice.due_date ? `Due ${new Date(invoice.due_date).toLocaleDateString()}` : ''}
-                      </p>
-                    </div>
-                    <Button variant="ghost" size="sm">
-                      <Download className="w-4 h-4" />
-                    </Button>
-                  </div>
+                  )}
+                  <Button variant="ghost" size="sm" className="text-gray-600">Edit</Button>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-8">
-              <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600">No invoices found</p>
-            </div>
-          )}
+              </div>
+            ))}
+          </div>
         </CardContent>
       </Card>
     </div>

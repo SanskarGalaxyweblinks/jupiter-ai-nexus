@@ -2,16 +2,13 @@
 import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
 
 export const useRealTimeUpdates = () => {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
 
   useEffect(() => {
     console.log('Setting up real-time updates...');
 
-    // Real-time usage updates
     const usageChannel = supabase
       .channel('usage-updates')
       .on(
@@ -23,7 +20,6 @@ export const useRealTimeUpdates = () => {
         },
         (payload) => {
           console.log('New API usage:', payload);
-          // Invalidate dashboard stats to trigger refresh
           queryClient.invalidateQueries({ queryKey: ['dashboard', 'stats'] });
           queryClient.invalidateQueries({ queryKey: ['usage-history'] });
         }
@@ -43,11 +39,9 @@ export const useRealTimeUpdates = () => {
       )
       .subscribe();
 
-    console.log('Real-time subscriptions created');
-
     return () => {
       console.log('Cleaning up real-time subscriptions');
       supabase.removeChannel(usageChannel);
     };
-  }, [queryClient, toast]);
+  }, [queryClient]);
 };
