@@ -55,18 +55,6 @@ export const useDashboardStats = () => {
 
         console.log('Today usage data:', todayUsage);
 
-        // Get current month billing
-        const currentDate = new Date();
-        const { data: monthlyBilling } = await supabase
-          .from('monthly_usage_summary')
-          .select('total_cost')
-          .eq('organization_id', userProfile.organization_id)
-          .eq('year', currentDate.getFullYear())
-          .eq('month', currentDate.getMonth() + 1)
-          .maybeSingle();
-
-        console.log('Monthly billing data:', monthlyBilling);
-
         // Get recent API calls for the organization
         const { data: recentCalls } = await supabase
           .from('api_usage_logs')
@@ -99,7 +87,6 @@ export const useDashboardStats = () => {
           totalCost,
           avgResponseTime: Math.round(avgResponseTime),
           successRate: Math.round(avgSuccessRate * 100),
-          monthlyBilling: monthlyBilling?.total_cost || 0,
           recentCalls: recentCalls || [],
           todayUsage: todayUsage || []
         };
@@ -147,14 +134,6 @@ const getDemoOrgStats = async () => {
       .eq('organization_id', org.id)
       .eq('usage_date', today);
 
-    const { data: monthlyBilling } = await supabase
-      .from('monthly_usage_summary')
-      .select('total_cost')
-      .eq('organization_id', org.id)
-      .eq('year', new Date().getFullYear())
-      .eq('month', new Date().getMonth() + 1)
-      .maybeSingle();
-
     const { data: recentCalls } = await supabase
       .from('api_usage_logs')
       .select(`
@@ -183,7 +162,6 @@ const getDemoOrgStats = async () => {
       totalCost,
       avgResponseTime: Math.round(avgResponseTime),
       successRate: Math.round(avgSuccessRate * 100),
-      monthlyBilling: monthlyBilling?.total_cost || 0,
       recentCalls: recentCalls || [],
       todayUsage: todayUsage || []
     };
@@ -200,150 +178,8 @@ const getMockDashboardData = () => {
     totalCost: 127.45,
     avgResponseTime: 245,
     successRate: 98,
-    monthlyBilling: 387.50,
     recentCalls: [],
     todayUsage: []
-  };
-};
-
-export const useBillingInfo = () => {
-  const { user } = useAuth();
-  
-  return useQuery({
-    queryKey: ['billing', user?.id],
-    queryFn: async () => {
-      console.log('Fetching billing info for user:', user?.email);
-      
-      if (!user) {
-        console.log('No user found, returning empty billing data');
-        return getEmptyBillingData();
-      }
-
-      try {
-        // Get user's organization
-        const { data: userProfile } = await supabase
-          .from('users')
-          .select(`
-            *,
-            organization_id,
-            organizations!inner(*)
-          `)
-          .eq('id', user.id)
-          .maybeSingle();
-
-        console.log('User profile for billing:', userProfile);
-
-        if (!userProfile?.organization_id) {
-          console.log('No organization found, using demo org for billing');
-          return await getDemoBillingData();
-        }
-
-        // Current billing cycle
-        const { data: currentCycle } = await supabase
-          .from('billing_cycles')
-          .select(`
-            *,
-            billing_line_items(*)
-          `)
-          .eq('organization_id', userProfile.organization_id)
-          .eq('status', 'pending')
-          .order('cycle_start', { ascending: false })
-          .limit(1)
-          .maybeSingle();
-        
-        console.log('Current billing cycle:', currentCycle);
-
-        // Invoice history
-        const { data: invoiceHistory } = await supabase
-          .from('billing_cycles')
-          .select('*')
-          .eq('organization_id', userProfile.organization_id)
-          .neq('status', 'draft')
-          .order('cycle_start', { ascending: false })
-          .limit(12);
-        
-        console.log('Invoice history:', invoiceHistory);
-
-        // Payment methods
-        const { data: paymentMethods } = await supabase
-          .from('payment_methods')
-          .select('*')
-          .eq('organization_id', userProfile.organization_id)
-          .eq('is_active', true);
-        
-        console.log('Payment methods:', paymentMethods);
-
-        return {
-          currentCycle,
-          invoiceHistory: invoiceHistory || [],
-          paymentMethods: paymentMethods || []
-        };
-
-      } catch (error) {
-        console.error('Error fetching billing info:', error);
-        return getEmptyBillingData();
-      }
-    },
-    enabled: !!user,
-    staleTime: 10 * 60 * 1000, // Consider data stale after 10 minutes
-    gcTime: 30 * 60 * 1000 // Keep in cache for 30 minutes
-  });
-};
-
-const getDemoBillingData = async () => {
-  try {
-    const { data: org } = await supabase
-      .from('organizations')
-      .select('id')
-      .eq('slug', DEMO_ORG_ID)
-      .maybeSingle();
-
-    if (!org) {
-      return getEmptyBillingData();
-    }
-
-    const { data: currentCycle } = await supabase
-      .from('billing_cycles')
-      .select(`
-        *,
-        billing_line_items(*)
-      `)
-      .eq('organization_id', org.id)
-      .eq('status', 'pending')
-      .order('cycle_start', { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    
-    const { data: invoiceHistory } = await supabase
-      .from('billing_cycles')
-      .select('*')
-      .eq('organization_id', org.id)
-      .neq('status', 'draft')
-      .order('cycle_start', { ascending: false })
-      .limit(12);
-    
-    const { data: paymentMethods } = await supabase
-      .from('payment_methods')
-      .select('*')
-      .eq('organization_id', org.id)
-      .eq('is_active', true);
-    
-    return {
-      currentCycle,
-      invoiceHistory: invoiceHistory || [],
-      paymentMethods: paymentMethods || []
-    };
-  } catch (error) {
-    console.error('Error fetching demo billing data:', error);
-    return getEmptyBillingData();
-  }
-};
-
-const getEmptyBillingData = () => {
-  return {
-    currentCycle: null,
-    invoiceHistory: [],
-    paymentMethods: []
   };
 };
 
@@ -380,8 +216,7 @@ export const useUserProfile = () => {
             .insert({
               id: user.id,
               email: user.email,
-              full_name: user.user_metadata?.full_name || '',
-              email_verified: !!user.email_confirmed_at
+              full_name: user.user_metadata?.full_name || ''
             })
             .select()
             .single();
@@ -399,6 +234,94 @@ export const useUserProfile = () => {
       } catch (error) {
         console.error('Error fetching user profile:', error);
         return null;
+      }
+    },
+    enabled: !!user,
+    staleTime: 5 * 60 * 1000, // Consider data stale after 5 minutes
+    gcTime: 30 * 60 * 1000 // Keep in cache for 30 minutes
+  });
+};
+
+export const useAvailableModels = () => {
+  return useQuery({
+    queryKey: ['ai-models'],
+    queryFn: async () => {
+      console.log('Fetching available AI models');
+      
+      try {
+        const { data: models } = await supabase
+          .from('ai_models')
+          .select('*')
+          .eq('is_active', true)
+          .order('name');
+
+        console.log('Available models:', models);
+        return models || [];
+      } catch (error) {
+        console.error('Error fetching AI models:', error);
+        return [];
+      }
+    },
+    staleTime: 30 * 60 * 1000, // Consider data stale after 30 minutes
+    gcTime: 60 * 60 * 1000 // Keep in cache for 1 hour
+  });
+};
+
+export const useUsageHistory = (days = 7) => {
+  const { user } = useAuth();
+  
+  return useQuery({
+    queryKey: ['usage-history', user?.id, days],
+    queryFn: async () => {
+      console.log(`Fetching usage history for ${days} days`);
+      
+      if (!user) {
+        return [];
+      }
+
+      try {
+        // Get user's organization
+        const { data: userProfile } = await supabase
+          .from('users')
+          .select('organization_id')
+          .eq('id', user.id)
+          .maybeSingle();
+
+        if (!userProfile?.organization_id) {
+          console.log('No organization found, using demo org');
+          const { data: org } = await supabase
+            .from('organizations')
+            .select('id')
+            .eq('slug', DEMO_ORG_ID)
+            .maybeSingle();
+          
+          if (!org) return [];
+          userProfile.organization_id = org.id;
+        }
+
+        // Get usage history for the last N days
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - days);
+
+        const { data: usageHistory } = await supabase
+          .from('daily_usage_summary')
+          .select(`
+            usage_date,
+            total_requests,
+            total_cost,
+            total_tokens,
+            success_rate,
+            ai_models!inner(name, provider)
+          `)
+          .eq('organization_id', userProfile.organization_id)
+          .gte('usage_date', startDate.toISOString().split('T')[0])
+          .order('usage_date', { ascending: true });
+
+        console.log('Usage history:', usageHistory);
+        return usageHistory || [];
+      } catch (error) {
+        console.error('Error fetching usage history:', error);
+        return [];
       }
     },
     enabled: !!user,

@@ -9,6 +9,8 @@ export const useRealTimeUpdates = () => {
   const { toast } = useToast();
 
   useEffect(() => {
+    console.log('Setting up real-time updates...');
+
     // Real-time usage updates
     const usageChannel = supabase
       .channel('usage-updates')
@@ -23,8 +25,7 @@ export const useRealTimeUpdates = () => {
           console.log('New API usage:', payload);
           // Invalidate dashboard stats to trigger refresh
           queryClient.invalidateQueries({ queryKey: ['dashboard', 'stats'] });
-          queryClient.invalidateQueries({ queryKey: ['analytics', 'usage'] });
-          queryClient.invalidateQueries({ queryKey: ['api', 'usage'] });
+          queryClient.invalidateQueries({ queryKey: ['usage-history'] });
         }
       )
       .on(
@@ -37,41 +38,16 @@ export const useRealTimeUpdates = () => {
         (payload) => {
           console.log('Daily summary updated:', payload);
           queryClient.invalidateQueries({ queryKey: ['dashboard', 'stats'] });
-          queryClient.invalidateQueries({ queryKey: ['analytics', 'usage'] });
+          queryClient.invalidateQueries({ queryKey: ['usage-history'] });
         }
       )
       .subscribe();
 
-    // Real-time notifications
-    const notificationChannel = supabase
-      .channel('notifications')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'notifications'
-        },
-        (payload) => {
-          console.log('New notification:', payload);
-          const notification = payload.new as any;
-          
-          // Show toast notification
-          toast({
-            title: notification.title,
-            description: notification.message,
-            variant: notification.priority === 'urgent' ? 'destructive' : 'default'
-          });
-          
-          // Update notification queries
-          queryClient.invalidateQueries({ queryKey: ['notifications'] });
-        }
-      )
-      .subscribe();
+    console.log('Real-time subscriptions created');
 
     return () => {
+      console.log('Cleaning up real-time subscriptions');
       supabase.removeChannel(usageChannel);
-      supabase.removeChannel(notificationChannel);
     };
   }, [queryClient, toast]);
 };
