@@ -16,11 +16,9 @@ import {
   CheckCircle,
   Plus
 } from 'lucide-react';
-import { useBillingInfo } from '@/hooks/useDashboardData';
 import { useToast } from '@/hooks/use-toast';
 
 const BillingPage = () => {
-  const { data: billingData, isLoading } = useBillingInfo();
   const { toast } = useToast();
   const [showAddPayment, setShowAddPayment] = useState(false);
 
@@ -32,6 +30,63 @@ const BillingPage = () => {
     costLimit: 200,
     tokens: 1250000,
     tokenLimit: 2000000
+  };
+
+  // Mock billing data since we simplified the database
+  const billingData = {
+    currentCycle: {
+      cycle_start: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString(),
+      cycle_end: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).toISOString(),
+      usage_cost: 127.45,
+      subscription_cost: 29.00,
+      total_amount: 156.45,
+      billing_line_items: [
+        {
+          id: '1',
+          description: 'AI API Usage',
+          quantity: 8542,
+          unit_type: 'requests',
+          total_amount: 127.45
+        },
+        {
+          id: '2',
+          description: 'Pro Subscription',
+          quantity: 1,
+          unit_type: 'month',
+          total_amount: 29.00
+        }
+      ]
+    },
+    paymentMethods: [
+      {
+        id: '1',
+        brand: 'visa',
+        last_four: '4242',
+        expiry_month: 12,
+        expiry_year: 2025,
+        is_default: true
+      }
+    ],
+    invoiceHistory: [
+      {
+        id: '1',
+        invoice_number: 'INV-001',
+        cycle_start: new Date(new Date().getFullYear(), new Date().getMonth() - 1, 1).toISOString(),
+        cycle_end: new Date(new Date().getFullYear(), new Date().getMonth(), 0).toISOString(),
+        total_amount: 142.30,
+        status: 'paid',
+        paid_at: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()
+      },
+      {
+        id: '2',
+        invoice_number: 'INV-002',
+        cycle_start: new Date(new Date().getFullYear(), new Date().getMonth() - 2, 1).toISOString(),
+        cycle_end: new Date(new Date().getFullYear(), new Date().getMonth() - 1, 0).toISOString(),
+        total_amount: 98.75,
+        status: 'paid',
+        paid_at: new Date(new Date().getFullYear(), new Date().getMonth() - 1, 5).toISOString()
+      }
+    ]
   };
 
   const getStatusColor = (status: string) => {
@@ -67,21 +122,6 @@ const BillingPage = () => {
     });
     setShowAddPayment(false);
   };
-
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-1/4 mb-6"></div>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="h-48 bg-gray-200 rounded"></div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6">
@@ -145,52 +185,48 @@ const BillingPage = () => {
       </div>
 
       {/* Current Billing Cycle */}
-      {billingData?.currentCycle && (
-        <Card className="bg-white border border-gray-200 shadow-sm">
-          <CardHeader>
-            <CardTitle className="text-gray-900">Current Billing Cycle</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div>
-                <p className="text-gray-600 text-sm">Billing Period</p>
-                <p className="text-gray-900 font-medium">
-                  {new Date(billingData.currentCycle.cycle_start).toLocaleDateString()} - {new Date(billingData.currentCycle.cycle_end).toLocaleDateString()}
-                </p>
-              </div>
-              <div>
-                <p className="text-gray-600 text-sm">Usage Cost</p>
-                <p className="text-gray-900 font-medium">${billingData.currentCycle.usage_cost}</p>
-              </div>
-              <div>
-                <p className="text-gray-600 text-sm">Subscription</p>
-                <p className="text-gray-900 font-medium">${billingData.currentCycle.subscription_cost}</p>
-              </div>
-              <div>
-                <p className="text-gray-600 text-sm">Total Amount</p>
-                <p className="text-gray-900 font-medium text-lg">${billingData.currentCycle.total_amount}</p>
-              </div>
+      <Card className="bg-white border border-gray-200 shadow-sm">
+        <CardHeader>
+          <CardTitle className="text-gray-900">Current Billing Cycle</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div>
+              <p className="text-gray-600 text-sm">Billing Period</p>
+              <p className="text-gray-900 font-medium">
+                {new Date(billingData.currentCycle.cycle_start).toLocaleDateString()} - {new Date(billingData.currentCycle.cycle_end).toLocaleDateString()}
+              </p>
             </div>
+            <div>
+              <p className="text-gray-600 text-sm">Usage Cost</p>
+              <p className="text-gray-900 font-medium">${billingData.currentCycle.usage_cost}</p>
+            </div>
+            <div>
+              <p className="text-gray-600 text-sm">Subscription</p>
+              <p className="text-gray-900 font-medium">${billingData.currentCycle.subscription_cost}</p>
+            </div>
+            <div>
+              <p className="text-gray-600 text-sm">Total Amount</p>
+              <p className="text-gray-900 font-medium text-lg">${billingData.currentCycle.total_amount}</p>
+            </div>
+          </div>
 
-            {billingData.currentCycle.billing_line_items && billingData.currentCycle.billing_line_items.length > 0 && (
-              <div className="mt-6">
-                <h4 className="text-gray-900 font-medium mb-4">Line Items</h4>
-                <div className="space-y-2">
-                  {billingData.currentCycle.billing_line_items.map((item: any) => (
-                    <div key={item.id} className="flex justify-between items-center p-3 bg-gray-800/50 rounded">
-                      <div>
-                        <p className="text-gray-900">{item.description}</p>
-                        <p className="text-gray-600 text-sm">{item.quantity} {item.unit_type}</p>
-                      </div>
-                      <p className="text-gray-900 font-medium">${item.total_amount}</p>
-                    </div>
-                  ))}
+          <div className="mt-6">
+            <h4 className="text-gray-900 font-medium mb-4">Line Items</h4>
+            <div className="space-y-2">
+              {billingData.currentCycle.billing_line_items.map((item: any) => (
+                <div key={item.id} className="flex justify-between items-center p-3 bg-gray-50 rounded">
+                  <div>
+                    <p className="text-gray-900">{item.description}</p>
+                    <p className="text-gray-600 text-sm">{item.quantity} {item.unit_type}</p>
+                  </div>
+                  <p className="text-gray-900 font-medium">${item.total_amount}</p>
                 </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
+              ))}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Payment Methods */}
       <Card className="bg-white border border-gray-200 shadow-sm">
