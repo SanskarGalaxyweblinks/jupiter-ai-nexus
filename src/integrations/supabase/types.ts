@@ -11,150 +11,72 @@ export type Database = {
     Tables: {
       ai_models: {
         Row: {
-          capabilities: Json | null
-          context_window: number | null
           created_at: string | null
-          description: string | null
           id: string
           input_cost_per_1k_tokens: number | null
           is_active: boolean | null
-          max_tokens: number | null
           model_identifier: string
           name: string
           output_cost_per_1k_tokens: number | null
-          performance_tier: string | null
           provider: string
-          release_date: string | null
           updated_at: string | null
-          version: string | null
         }
         Insert: {
-          capabilities?: Json | null
-          context_window?: number | null
           created_at?: string | null
-          description?: string | null
           id?: string
           input_cost_per_1k_tokens?: number | null
           is_active?: boolean | null
-          max_tokens?: number | null
           model_identifier: string
           name: string
           output_cost_per_1k_tokens?: number | null
-          performance_tier?: string | null
           provider: string
-          release_date?: string | null
           updated_at?: string | null
-          version?: string | null
         }
         Update: {
-          capabilities?: Json | null
-          context_window?: number | null
           created_at?: string | null
-          description?: string | null
           id?: string
           input_cost_per_1k_tokens?: number | null
           is_active?: boolean | null
-          max_tokens?: number | null
           model_identifier?: string
           name?: string
           output_cost_per_1k_tokens?: number | null
-          performance_tier?: string | null
           provider?: string
-          release_date?: string | null
           updated_at?: string | null
-          version?: string | null
         }
         Relationships: []
       }
       api_usage_logs: {
         Row: {
-          completion_tokens: number | null
           created_at: string | null
-          endpoint: string | null
-          error_message: string | null
-          error_type: string | null
           id: string
-          input_cost: number | null
-          ip_address: unknown | null
-          max_tokens_requested: number | null
-          metadata: Json | null
-          method: string | null
           model_id: string | null
-          model_version: string | null
           organization_id: string | null
-          output_cost: number | null
-          prompt_tokens: number | null
-          request_id: string
-          request_size_bytes: number | null
-          response_size_bytes: number | null
           response_time_ms: number | null
           status: string | null
-          status_code: number | null
-          stream_used: boolean | null
-          temperature: number | null
           total_cost: number | null
           total_tokens: number | null
-          user_agent: string | null
           user_id: string | null
         }
         Insert: {
-          completion_tokens?: number | null
           created_at?: string | null
-          endpoint?: string | null
-          error_message?: string | null
-          error_type?: string | null
           id?: string
-          input_cost?: number | null
-          ip_address?: unknown | null
-          max_tokens_requested?: number | null
-          metadata?: Json | null
-          method?: string | null
           model_id?: string | null
-          model_version?: string | null
           organization_id?: string | null
-          output_cost?: number | null
-          prompt_tokens?: number | null
-          request_id: string
-          request_size_bytes?: number | null
-          response_size_bytes?: number | null
           response_time_ms?: number | null
           status?: string | null
-          status_code?: number | null
-          stream_used?: boolean | null
-          temperature?: number | null
           total_cost?: number | null
           total_tokens?: number | null
-          user_agent?: string | null
           user_id?: string | null
         }
         Update: {
-          completion_tokens?: number | null
           created_at?: string | null
-          endpoint?: string | null
-          error_message?: string | null
-          error_type?: string | null
           id?: string
-          input_cost?: number | null
-          ip_address?: unknown | null
-          max_tokens_requested?: number | null
-          metadata?: Json | null
-          method?: string | null
           model_id?: string | null
-          model_version?: string | null
           organization_id?: string | null
-          output_cost?: number | null
-          prompt_tokens?: number | null
-          request_id?: string
-          request_size_bytes?: number | null
-          response_size_bytes?: number | null
           response_time_ms?: number | null
           status?: string | null
-          status_code?: number | null
-          stream_used?: boolean | null
-          temperature?: number | null
           total_cost?: number | null
           total_tokens?: number | null
-          user_agent?: string | null
           user_id?: string | null
         }
         Relationships: [
@@ -183,56 +105,38 @@ export type Database = {
       }
       daily_usage_summary: {
         Row: {
-          avg_response_time_ms: number | null
           created_at: string | null
-          error_breakdown: Json | null
           id: string
           model_id: string | null
           organization_id: string | null
-          peak_hour: number | null
-          peak_requests: number | null
           success_rate: number | null
-          successful_requests: number | null
           total_cost: number | null
           total_requests: number | null
           total_tokens: number | null
-          unique_users: number | null
           updated_at: string | null
           usage_date: string | null
         }
         Insert: {
-          avg_response_time_ms?: number | null
           created_at?: string | null
-          error_breakdown?: Json | null
           id?: string
           model_id?: string | null
           organization_id?: string | null
-          peak_hour?: number | null
-          peak_requests?: number | null
           success_rate?: number | null
-          successful_requests?: number | null
           total_cost?: number | null
           total_requests?: number | null
           total_tokens?: number | null
-          unique_users?: number | null
           updated_at?: string | null
           usage_date?: string | null
         }
         Update: {
-          avg_response_time_ms?: number | null
           created_at?: string | null
-          error_breakdown?: Json | null
           id?: string
           model_id?: string | null
           organization_id?: string | null
-          peak_hour?: number | null
-          peak_requests?: number | null
           success_rate?: number | null
-          successful_requests?: number | null
           total_cost?: number | null
           total_requests?: number | null
           total_tokens?: number | null
-          unique_users?: number | null
           updated_at?: string | null
           usage_date?: string | null
         }
@@ -253,47 +157,79 @@ export type Database = {
           },
         ]
       }
-      organizations: {
+      monthly_billing_summary: {
         Row: {
-          api_key_prefix: string | null
-          billing_email: string | null
-          company_size: string | null
           created_at: string | null
           id: string
-          industry: string | null
-          is_active: boolean | null
-          logo_url: string | null
-          monthly_budget: number | null
+          month: number | null
+          organization_id: string | null
+          total_cost: number | null
+          total_requests: number | null
+          total_tokens: number | null
+          updated_at: string | null
+          year: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          month?: number | null
+          organization_id?: string | null
+          total_cost?: number | null
+          total_requests?: number | null
+          total_tokens?: number | null
+          updated_at?: string | null
+          year?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          month?: number | null
+          organization_id?: string | null
+          total_cost?: number | null
+          total_requests?: number | null
+          total_tokens?: number | null
+          updated_at?: string | null
+          year?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "monthly_billing_summary_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organizations: {
+        Row: {
+          created_at: string | null
+          id: string
+          monthly_cost_limit: number | null
+          monthly_request_limit: number | null
+          monthly_token_limit: number | null
           name: string
           slug: string
           subscription_tier: string | null
           updated_at: string | null
         }
         Insert: {
-          api_key_prefix?: string | null
-          billing_email?: string | null
-          company_size?: string | null
           created_at?: string | null
           id?: string
-          industry?: string | null
-          is_active?: boolean | null
-          logo_url?: string | null
-          monthly_budget?: number | null
+          monthly_cost_limit?: number | null
+          monthly_request_limit?: number | null
+          monthly_token_limit?: number | null
           name: string
           slug: string
           subscription_tier?: string | null
           updated_at?: string | null
         }
         Update: {
-          api_key_prefix?: string | null
-          billing_email?: string | null
-          company_size?: string | null
           created_at?: string | null
           id?: string
-          industry?: string | null
-          is_active?: boolean | null
-          logo_url?: string | null
-          monthly_budget?: number | null
+          monthly_cost_limit?: number | null
+          monthly_request_limit?: number | null
+          monthly_token_limit?: number | null
           name?: string
           slug?: string
           subscription_tier?: string | null
@@ -303,57 +239,30 @@ export type Database = {
       }
       users: {
         Row: {
-          avatar_url: string | null
           created_at: string | null
-          department: string | null
           email: string
-          email_verified: boolean | null
           full_name: string | null
           id: string
-          is_active: boolean | null
-          job_title: string | null
-          last_login: string | null
           organization_id: string | null
-          phone: string | null
-          preferences: Json | null
           role: string | null
-          timezone: string | null
           updated_at: string | null
         }
         Insert: {
-          avatar_url?: string | null
           created_at?: string | null
-          department?: string | null
           email: string
-          email_verified?: boolean | null
           full_name?: string | null
           id?: string
-          is_active?: boolean | null
-          job_title?: string | null
-          last_login?: string | null
           organization_id?: string | null
-          phone?: string | null
-          preferences?: Json | null
           role?: string | null
-          timezone?: string | null
           updated_at?: string | null
         }
         Update: {
-          avatar_url?: string | null
           created_at?: string | null
-          department?: string | null
           email?: string
-          email_verified?: boolean | null
           full_name?: string | null
           id?: string
-          is_active?: boolean | null
-          job_title?: string | null
-          last_login?: string | null
           organization_id?: string | null
-          phone?: string | null
-          preferences?: Json | null
           role?: string | null
-          timezone?: string | null
           updated_at?: string | null
         }
         Relationships: [

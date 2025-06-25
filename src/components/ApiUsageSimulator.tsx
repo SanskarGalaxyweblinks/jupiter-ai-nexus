@@ -16,8 +16,7 @@ export const ApiUsageSimulator = () => {
   const { toast } = useToast();
   const { data: models } = useAvailableModels();
   const [selectedModel, setSelectedModel] = useState('');
-  const [promptTokens, setPromptTokens] = useState('100');
-  const [completionTokens, setCompletionTokens] = useState('50');
+  const [totalTokens, setTotalTokens] = useState('100');
   const [isSimulating, setIsSimulating] = useState(false);
 
   const simulateApiCall = async () => {
@@ -50,11 +49,10 @@ export const ApiUsageSimulator = () => {
         throw new Error('Selected model not found');
       }
 
-      // Calculate costs
-      const promptTokensNum = parseInt(promptTokens) || 0;
-      const completionTokensNum = parseInt(completionTokens) || 0;
-      const inputCost = (promptTokensNum / 1000) * (model.input_cost_per_1k_tokens || 0);
-      const outputCost = (completionTokensNum / 1000) * (model.output_cost_per_1k_tokens || 0);
+      // Calculate cost (simplified - using average cost per token)
+      const tokensNum = parseInt(totalTokens) || 0;
+      const avgCostPer1k = ((model.input_cost_per_1k_tokens || 0) + (model.output_cost_per_1k_tokens || 0)) / 2;
+      const totalCost = (tokensNum / 1000) * avgCostPer1k;
 
       // Insert simulated API usage
       const { error } = await supabase
@@ -63,11 +61,8 @@ export const ApiUsageSimulator = () => {
           organization_id: org.id,
           user_id: user.id,
           model_id: selectedModel,
-          request_id: `sim_${Date.now()}`,
-          prompt_tokens: promptTokensNum,
-          completion_tokens: completionTokensNum,
-          input_cost: inputCost,
-          output_cost: outputCost,
+          total_tokens: tokensNum,
+          total_cost: totalCost,
           response_time_ms: Math.floor(Math.random() * 2000) + 200,
           status: 'success'
         });
@@ -116,27 +111,15 @@ export const ApiUsageSimulator = () => {
           </Select>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="prompt-tokens">Prompt Tokens</Label>
-            <Input
-              id="prompt-tokens"
-              type="number"
-              value={promptTokens}
-              onChange={(e) => setPromptTokens(e.target.value)}
-              placeholder="100"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="completion-tokens">Completion Tokens</Label>
-            <Input
-              id="completion-tokens"
-              type="number"
-              value={completionTokens}
-              onChange={(e) => setCompletionTokens(e.target.value)}
-              placeholder="50"
-            />
-          </div>
+        <div className="space-y-2">
+          <Label htmlFor="total-tokens">Total Tokens</Label>
+          <Input
+            id="total-tokens"
+            type="number"
+            value={totalTokens}
+            onChange={(e) => setTotalTokens(e.target.value)}
+            placeholder="100"
+          />
         </div>
 
         <Button 

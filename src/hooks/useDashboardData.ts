@@ -58,7 +58,6 @@ export const useDashboardStats = () => {
           .select(`
             total_requests,
             total_cost,
-            avg_response_time_ms,
             success_rate,
             ai_models!inner(name, provider)
           `)
@@ -68,7 +67,7 @@ export const useDashboardStats = () => {
         const { data: recentCalls } = await supabase
           .from('api_usage_logs')
           .select(`
-            request_id,
+            id,
             total_tokens,
             total_cost,
             response_time_ms,
@@ -83,10 +82,12 @@ export const useDashboardStats = () => {
 
         const totalRequests = todayUsage?.reduce((sum, item) => sum + (item.total_requests || 0), 0) || 0;
         const totalCost = todayUsage?.reduce((sum, item) => sum + (item.total_cost || 0), 0) || 0;
-        const avgResponseTime = todayUsage?.length ? 
-          todayUsage.reduce((sum, item) => sum + (item.avg_response_time_ms || 0), 0) / todayUsage.length : 0;
         const avgSuccessRate = todayUsage?.length ?
           todayUsage.reduce((sum, item) => sum + (item.success_rate || 0), 0) / todayUsage.length : 0;
+
+        // Calculate average response time from recent calls
+        const avgResponseTime = recentCalls?.length ?
+          recentCalls.reduce((sum, call) => sum + (call.response_time_ms || 0), 0) / recentCalls.length : 0;
 
         return {
           totalRequests,
